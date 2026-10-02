@@ -21,6 +21,9 @@
     { key: 'celebrate.roundComplete.chipPop', group: 'celebrations', label: 'Round complete: "After Round N" pop', hint: 'The round chip bounces in' },
     { key: 'celebrate.reveal.confetti', group: 'celebrations', label: 'Answer reveal: confetti', hint: 'Burst over the correct answer' },
     { key: 'celebrate.reveal.highlight', group: 'celebrations', label: 'Answer reveal: pop animation', hint: 'The correct option bounces (it still turns green)' },
+    { key: 'celebrate.adjustment.banner', group: 'celebrations', label: 'Penalty / bonus: banner', hint: 'Announces who got points and why' },
+    { key: 'celebrate.adjustment.shake', group: 'celebrations', label: 'Penalty: screen shake', hint: 'The scoreboard shakes when a team is penalised' },
+    { key: 'celebrate.adjustment.confetti', group: 'celebrations', label: 'Bonus: confetti', hint: 'Burst when a team is given bonus points' },
 
     { key: 'scores.pulse', group: 'scores', label: 'Pulse the changed team', hint: 'Total flashes and the bar glows' },
     { key: 'scores.plusChip', group: 'scores', label: 'Floating "+N" points', hint: 'Points float up from the team row' },
@@ -58,10 +61,10 @@
     calm: {
       label: '🌿 Calm', confettiAmount: 'low',
       flags: except('celebrate.leadChange.confetti', 'celebrate.leadChange.banner', 'celebrate.roundComplete.confetti', 'celebrate.roundComplete.banner',
-        'celebrate.roundComplete.chipPop', 'celebrate.reveal.confetti', 'scores.pulse', 'scores.plusChip',
+        'celebrate.roundComplete.chipPop', 'celebrate.reveal.confetti', 'celebrate.adjustment.shake', 'celebrate.adjustment.confetti', 'scores.pulse', 'scores.plusChip',
         'ambient.background', 'ambient.crestWobble', 'ambient.crownBob', 'ambient.emptyBob'),
     },
-    minimal: { label: '➖ Minimal', confettiAmount: 'low', flags: only('scores.countUp', 'scores.reorder', 'scores.barGrow', 'screens.questionSlide', 'admin.successToasts') },
+    minimal: { label: '➖ Minimal', confettiAmount: 'low', flags: only('celebrate.adjustment.banner', 'scores.countUp', 'scores.reorder', 'scores.barGrow', 'screens.questionSlide', 'admin.successToasts') },
     off: { label: '⏹ Off', confettiAmount: 'low', flags: only() },
   };
 

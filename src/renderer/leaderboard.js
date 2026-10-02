@@ -59,7 +59,8 @@
       A.countTo(refs.total, e.total);
       refs.delta.textContent = e.delta > 0 ? '▲' + e.delta : e.delta < 0 ? '▼' + -e.delta : '';
       refs.delta.className = 'delta ' + (e.delta > 0 ? 'up' : e.delta < 0 ? 'down' : '');
-      refs.bar.style.width = (e.total / maxTotal * 100) + '%';
+      refs.bar.style.width = (Math.max(e.total, 0) / maxTotal * 100) + '%';
+      const gross = Object.values(e.scores).reduce((n, v) => n + (v > 0 ? v : 0), 0) + e.bonus;
       // Stacked per-round segments, keyed so widths animate.
       const keep = new Set();
       for (const rd of state.rounds) {
@@ -69,13 +70,24 @@
         let seg = refs.segs.get(rd.id);
         if (!seg) { seg = el('div', 'seg'); refs.segs.set(rd.id, seg); }
         seg.style.background = roundColour(state, rd.id);
-        seg.style.width = (v / e.total * 100) + '%';
-        seg.textContent = v / e.total > 0.07 ? A.fmt(v) : '';
+        seg.style.width = (v / gross * 100) + '%';
+        seg.textContent = v / gross > 0.07 ? A.fmt(v) : '';
         seg.title = `${rd.name}: ${A.fmt(v)}`;
       }
+      if (e.bonus > 0) {
+        keep.add('bonus');
+        let seg = refs.segs.get('bonus');
+        if (!seg) { seg = el('div', 'seg bonus'); refs.segs.set('bonus', seg); }
+        seg.style.width = (e.bonus / gross * 100) + '%';
+        seg.textContent = e.bonus / gross > 0.07 ? '🎁' + A.fmt(e.bonus) : '';
+        seg.title = `Bonus: ${A.fmt(e.bonus)}`;
+      }
+      row.classList.toggle('penalised', e.penalty > 0);
+      refs.nm.title = e.penalty > 0 ? `Penalties: −${A.fmt(e.penalty)}` : '';
       for (const [id, seg] of refs.segs) if (!keep.has(id)) { seg.remove(); refs.segs.delete(id); }
       // Keep DOM order = round order.
       for (const rd of state.rounds) { const seg = refs.segs.get(rd.id); if (seg) refs.bar.append(seg); }
+      if (refs.segs.has('bonus')) refs.bar.append(refs.segs.get('bonus'));
     });
     for (const [id, r] of rowEls) if (!seen.has(id)) { r.el.remove(); rowEls.delete(id); }
   }
@@ -170,20 +182,24 @@
         lastQ = cur;
         const inner = $('qinner');
         inner.replaceChildren(el('div', 'qround', `${cur.round.name} · Question ${cur.step.qIndex + 1}`), el('div', 'qtext', cur.question.text || '…'));
-        const opts = el('div', 'qopts');
-        cur.question.options.forEach((o, i) => {
-          const d = el('div', 'opt'); d.style.setProperty('--i', i);
-          d.append(el('span', 'letter', 'ABCD'[i]), el('span', null, o || '—'));
-          if (cur.question.correct === i) d.classList.add('correct');
-          opts.append(d);
-        });
-        inner.append(opts);
+        if (L.isText(cur.question)) {
+          if (L.hasAnswer(cur.question)) inner.append(el('div', 'qanswer', cur.question.answer));
+        } else {
+          const opts = el('div', 'qopts');
+          cur.question.options.forEach((o, i) => {
+            const d = el('div', 'opt'); d.style.setProperty('--i', i);
+            d.append(el('span', 'letter', 'ABCD'[i]), el('span', null, o || '—'));
+            if (cur.question.correct === i) d.classList.add('correct');
+            opts.append(d);
+          });
+          inner.append(opts);
+        }
         panel.classList.remove('show-opts', 'reveal');
         void panel.offsetWidth;
       }
       const showOpts = cur.step.type === 'options';
       requestAnimationFrame(() => panel.classList.toggle('show-opts', showOpts));
-      const reveal = showOpts && state.presentation.revealAnswer;
+      const reveal = L.canReveal(cur) && state.presentation.revealAnswer;
       panel.classList.toggle('reveal', reveal);
       if (reveal && !lastReveal) playReveal();
       lastReveal = reveal;
@@ -210,8 +226,8 @@
 
   // ---- events ---------------------------------------------------------------------
   let bannerTimer;
-  function banner(text) {
-    const b = $('banner'); b.textContent = text; b.classList.remove('on'); void b.offsetWidth; b.classList.add('on');
+  function banner(text, kind) {
+    const b = $('banner'); b.textContent = text; b.classList.remove('on', 'penalty'); if (kind) b.classList.add(kind); void b.offsetWidth; b.classList.add('on');
     clearTimeout(bannerTimer);
   }
   // Each play* returns true when it showed anything, so a switched-off celebration doesn't suppress the next one.
@@ -239,12 +255,36 @@
       setTimeout(() => r.el.classList.remove('pulse'), 1300);
     }
     if (Effects.on('scores.plusChip')) {
-      const chip = el('div', 'chipplus', (diff > 0 ? '+' : '') + A.fmt(diff));
+      const chip = el('div', 'chipplus' + (diff < 0 ? ' neg' : ''), (diff > 0 ? '+' : '') + A.fmt(diff));
       r.el.append(chip); setTimeout(() => chip.remove(), 1900);
     }
   }
-
+  // Penalty / bonus announcement (flags: celebrate.adjustment.banner | .confetti | .shake).
+  function playAdjustment(team, x) {
+    const pts = A.fmt(Math.abs(x.points)) + ' point' + (Math.abs(x.points) === 1 ? '' : 's');
+    const why = x.reason ? ` – ${x.reason}` : '';
+    let shown = false;
+    if (x.points < 0) {
+      if (Effects.on('celebrate.adjustment.banner')) { banner(`🚨 ${team.name}: −${pts}${why}`, 'penalty'); shown = true; }
+      if (Effects.on('celebrate.adjustment.shake')) {
+        document.body.classList.remove('shake-screen'); void document.body.offsetWidth; document.body.classList.add('shake-screen');
+        setTimeout(() => document.body.classList.remove('shake-screen'), 700); shown = true;
+      }
+    } else {
+      if (Effects.on('celebrate.adjustment.banner')) { banner(`🎁 ${team.name}: +${pts}${why}`); shown = true; }
+      if (Effects.on('celebrate.adjustment.confetti')) { window.Confetti.burst({ x: .5, y: .3, count: 110 }); shown = true; }
+    }
+    return shown;
+  }
+  function announceAdjustments(a, b) {
+    const had = new Set(a.adjustments.map((x) => x.id));
+    const fresh = b.adjustments.filter((x) => !had.has(x.id));
+    if (!fresh.length) return false;
+    const x = fresh[fresh.length - 1], team = b.teams.find((t) => t.id === x.teamId);
+    return !!team && playAdjustment(team, x);
+  }
   function detectEvents(a, b) {
+    const announced = announceAdjustments(a, b);
     const sa = L.standings(a), sb = L.standings(b);
     const before = new Map(sa.map((e) => [e.team.id, e.total]));
     for (const e of sb) {
@@ -254,6 +294,7 @@
       if (!diff || !r) continue;
       scorePulse(r, diff);
     }
+    if (announced) return;
     const leadA = sa.length && sa[0].total > 0 && sa[0].rank === 1 && (sa.length < 2 || sa[1].rank !== 1) ? sa[0].team.id : null;
     const leadB = sb.length && sb[0].total > 0 && sb[0].rank === 1 && (sb.length < 2 || sb[1].rank !== 1) ? sb[0].team : null;
     if (leadA && leadB && leadB.id !== leadA && playLeadChange(leadB.name)) return;

@@ -28,6 +28,7 @@
       title: str(opts && opts.title) || DEFAULT_TITLE,
       rounds,
       teams: [],
+      adjustments: [],
       rules: { items: DEFAULT_RULES.slice(), visible: true },
       presentation: { step: 0, revealAnswer: false },
       history: [],
@@ -35,18 +36,23 @@
     };
   }
 
+  // A question is multiple choice (default; four options, optional correct index) or
+  // a written answer ('text'; optional model answer shown on reveal).
+  const isText = (q) => !!q && q.type === 'text';
   function validQuestion(x) {
-    return isObj(x) && typeof x.text === 'string' && Array.isArray(x.options) && x.options.length === 4 &&
-      x.options.every((o) => typeof o === 'string') &&
-      (x.media === undefined || typeof x.media === 'string') &&
+    if (!isObj(x) || typeof x.text !== 'string') return false;
+    if (x.type !== undefined && x.type !== 'choice' && x.type !== 'text') return false;
+    if (x.media !== undefined && typeof x.media !== 'string') return false;
+    if (x.type === 'text') return x.answer === undefined || x.answer === null || typeof x.answer === 'string';
+    return Array.isArray(x.options) && x.options.length === 4 && x.options.every((o) => typeof o === 'string') &&
       (x.correct === null || x.correct === undefined || (Number.isInteger(x.correct) && x.correct >= 0 && x.correct <= 3));
   }
-  const cleanQuestion = (x) => ({
-    text: x.text.trim(),
-    options: x.options.map((o) => o.trim()),
-    correct: x.correct === undefined ? null : x.correct,
-    media: (x.media || '').trim(),
-  });
+  const cleanQuestion = (x) => x.type === 'text'
+    ? { type: 'text', text: x.text.trim(), options: [], correct: null, answer: str(x.answer), media: str(x.media) }
+    : { type: 'choice', text: x.text.trim(), options: x.options.map((o) => o.trim()), correct: x.correct === undefined ? null : x.correct, media: str(x.media) };
+  // Does this question have something to reveal? (written: a model answer or answer media)
+  const hasAnswer = (q) => !!q && (isText(q) ? !!(q.answer || q.media) : q.correct != null);
+  const adjKind = (a) => (a.points > 0 ? 'bonus' : 'penalty');
 
   // Answer media: an https image/GIF URL or a YouTube link. Returns { kind: 'image' | 'youtube', src } or null if unusable.
   const IMAGE_RE = /\.(png|jpe?g|gif|webp|avif|svg)$/i;
@@ -97,11 +103,18 @@
     const rules = isObj(obj.rules) && Array.isArray(obj.rules.items)
       ? { items: obj.rules.items.filter((i) => typeof i === 'string'), visible: obj.rules.visible !== false }
       : d.rules;
+    const teamIds = new Set(teams.map((t) => t.id));
+    const adjustments = (Array.isArray(obj.adjustments) ? obj.adjustments : []).filter((a) => isObj(a) && typeof a.id === 'string' &&
+      teamIds.has(a.teamId) && Number.isFinite(a.points) && a.points !== 0)
+      .map((a) => ({ id: a.id, teamId: a.teamId, points: a.points, reason: str(a.reason) }));
+    const adjIds = new Set(adjustments.map((a) => a.id));
     let maxN = 0;
-    for (const x of [...rounds, ...teams]) { const m = /(\d+)$/.exec(x.id); if (m) maxN = Math.max(maxN, +m[1]); }
-    const history = Array.isArray(obj.history) ? obj.history.filter((h) => isObj(h) && typeof h.teamId === 'string' && typeof h.roundId === 'string') : [];
+    for (const x of [...rounds, ...teams, ...adjustments]) { const m = /(\d+)$/.exec(x.id); if (m) maxN = Math.max(maxN, +m[1]); }
+    const history = Array.isArray(obj.history) ? obj.history.filter((h) => isObj(h) && (h.adjId !== undefined
+      ? typeof h.adjId === 'string' && adjIds.has(h.adjId)
+      : typeof h.teamId === 'string' && typeof h.roundId === 'string')) : [];
     const state = {
-      version: 1, title: obj.title, rounds, teams, rules,
+      version: 1, title: obj.title, rounds, teams, adjustments, rules,
       presentation: { step: Number.isInteger(obj.presentation && obj.presentation.step) ? obj.presentation.step : 0, revealAnswer: false },
       history, nextId: Math.max(maxN + 1, Number.isInteger(obj.nextId) ? obj.nextId : 0),
     };
@@ -114,7 +127,7 @@
     for (const round of state.rounds) {
       (round.questions || []).forEach((_, qIndex) => {
         steps.push({ type: 'question', roundId: round.id, qIndex });
-        steps.push({ type: 'options', roundId: round.id, qIndex });
+        if (!isText(round.questions[qIndex])) steps.push({ type: 'options', roundId: round.id, qIndex });
         steps.push({ type: 'board' });
       });
     }
@@ -126,13 +139,17 @@
     const round = state.rounds.find((r) => r.id === step.roundId);
     return round ? { step, round, question: round.questions[step.qIndex] } : null;
   }
+  // The answer can be revealed on the options step (choice) or the question step (written), if one is set.
+  function canReveal(cur) {
+    if (!cur || !hasAnswer(cur.question)) return false;
+    return cur.step.type === (isText(cur.question) ? 'question' : 'options');
+  }
   // Mutates (callers pass a clone). Keeps the step in range and drops stale reveal state.
   function clampPresentation(s) {
     const max = presentationSteps(s).length - 1;
     const step = Math.min(Math.max(s.presentation.step | 0, 0), max);
     s.presentation.step = step;
-    const cur = currentQuestion(s);
-    if (!cur || cur.step.type !== 'options' || cur.question.correct == null) s.presentation.revealAnswer = false;
+    if (!canReveal(currentQuestion(s))) s.presentation.revealAnswer = false;
     return s;
   }
 
@@ -169,7 +186,7 @@
         });
         const keep = new Set(rounds.map((r) => r.id));
         for (const t of s.teams) for (const k of Object.keys(t.scores)) if (!keep.has(k)) delete t.scores[k];
-        s.history = s.history.filter((h) => keep.has(h.roundId));
+        s.history = s.history.filter((h) => h.adjId !== undefined || keep.has(h.roundId));
         s.rounds = rounds;
         return clampPresentation(s);
       }
@@ -191,7 +208,9 @@
       case 'removeTeam': {
         if (!s.teams.some((t) => t.id === action.teamId)) return state;
         s.teams = s.teams.filter((t) => t.id !== action.teamId);
-        s.history = s.history.filter((h) => h.teamId !== action.teamId);
+        const gone = new Set(s.adjustments.filter((a) => a.teamId === action.teamId).map((a) => a.id));
+        s.adjustments = s.adjustments.filter((a) => !gone.has(a.id));
+        s.history = s.history.filter((h) => h.teamId !== action.teamId && !gone.has(h.adjId));
         return s;
       }
       case 'setScore': {
@@ -211,13 +230,31 @@
       case 'undo': {
         const h = s.history.pop();
         if (!h) return state;
+        if (h.adjId !== undefined) { s.adjustments = s.adjustments.filter((a) => a.id !== h.adjId); return s; }
         const team = s.teams.find((t) => t.id === h.teamId);
         if (team) { if (h.prev === null) delete team.scores[h.roundId]; else team.scores[h.roundId] = h.prev; }
         return s;
       }
       case 'clearScores': {
         for (const t of s.teams) t.scores = {};
+        s.adjustments = [];
         s.history = [];
+        return s;
+      }
+      // Bonus (points > 0) or penalty (points < 0) outside the rounds, e.g. for catching cheaters.
+      case 'addAdjustment': {
+        const points = typeof action.points === 'string' && action.points.trim() === '' ? NaN : Number(action.points);
+        if (!s.teams.some((t) => t.id === action.teamId) || !Number.isFinite(points) || points === 0) return state;
+        const id = 'a' + s.nextId++;
+        s.adjustments.push({ id, teamId: action.teamId, points, reason: str(action.reason) });
+        s.history.push({ adjId: id });
+        if (s.history.length > HISTORY_CAP) s.history.shift();
+        return s;
+      }
+      case 'removeAdjustment': {
+        if (!s.adjustments.some((a) => a.id === action.id)) return state;
+        s.adjustments = s.adjustments.filter((a) => a.id !== action.id);
+        s.history = s.history.filter((h) => h.adjId !== action.id);
         return s;
       }
       case 'resetAll':
@@ -253,8 +290,7 @@
         return s;
       }
       case 'presentReveal': {
-        const cur = currentQuestion(s);
-        if (!cur || cur.step.type !== 'options' || cur.question.correct == null) return state;
+        if (!canReveal(currentQuestion(s))) return state;
         s.presentation.revealAnswer = !s.presentation.revealAnswer;
         return s;
       }
@@ -266,7 +302,8 @@
   }
 
   // ---- selectors --------------------------------------------------------------
-  const total = (team, rounds) => rounds.reduce((a, r) => a + (team.scores[r.id] || 0), 0);
+  const adjustmentTotal = (state, team) => state.adjustments.filter((a) => a.teamId === team.id).reduce((n, a) => n + a.points, 0);
+  const total = (state, team, rounds) => rounds.reduce((a, r) => a + (team.scores[r.id] || 0), 0) + adjustmentTotal(state, team);
   function rankList(entries) {
     // entries: [{team,total}] -> ranks (competition ranking: 1,1,3)
     const sorted = entries.slice().sort((a, b) => b.total - a.total);
@@ -279,11 +316,13 @@
     const scored = scoredRounds(state);
     const prevRounds = scored.length >= 2 ? state.rounds.filter((r) => r !== scored[scored.length - 1]) : null;
     const prevRank = new Map();
-    if (prevRounds) for (const e of rankList(state.teams.map((team) => ({ team, total: total(team, prevRounds) })))) prevRank.set(e.team.id, e.rank);
-    return rankList(state.teams.map((team) => ({ team, total: total(team, state.rounds) }))).map((e) => ({
+    if (prevRounds) for (const e of rankList(state.teams.map((team) => ({ team, total: total(state, team, prevRounds) })))) prevRank.set(e.team.id, e.rank);
+    return rankList(state.teams.map((team) => ({ team, total: total(state, team, state.rounds) }))).map((e) => ({
       team: e.team, total: e.total, rank: e.rank,
       delta: prevRank.has(e.team.id) ? prevRank.get(e.team.id) - e.rank : 0,
       scores: e.team.scores,
+      bonus: state.adjustments.filter((a) => a.teamId === e.team.id && a.points > 0).reduce((n, a) => n + a.points, 0),
+      penalty: -state.adjustments.filter((a) => a.teamId === e.team.id && a.points < 0).reduce((n, a) => n + a.points, 0),
     }));
   }
 
@@ -310,7 +349,7 @@
     let leadChanges = 0, last = null;
     scored.forEach((_, i) => {
       const upto = scored.slice(0, i + 1);
-      const tots = state.teams.map((team) => ({ team, total: total(team, upto) })).sort((a, b) => b.total - a.total);
+      const tots = state.teams.map((team) => ({ team, total: total(state, team, upto) })).sort((a, b) => b.total - a.total);
       if (!tots.length || (tots.length > 1 && tots[0].total === tots[1].total)) return;
       if (last && last !== tots[0].team.id) leadChanges++;
       last = tots[0].team.id;
@@ -322,5 +361,5 @@
     return { roundWinners, biggestClimber, bestWorst, leadChanges, gap, woodenSpoon };
   }
 
-  return { DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, parseMedia, scoredRounds };
+  return { DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, parseMedia, scoredRounds, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
 });

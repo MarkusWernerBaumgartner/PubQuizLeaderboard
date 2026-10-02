@@ -8,6 +8,7 @@
   let qRound = null;     // round shown in the Questions tab
   let pendingFocus = null;
   let lastMainKey = null;
+  let adjDraft = { teamId: null, points: '', reason: '' };   // survives re-renders while typing
   try { section = sessionStorage.getItem('admin.section') || section; } catch (e) { /* ignore */ }
   const requested = new URLSearchParams(location.search).get('section');
   if (requested) section = requested;
@@ -121,7 +122,15 @@
     const round = state.rounds.find((r) => r.id === qRound);
     const qs = round.questions;
     const commit = (list) => dispatch({ type: 'setQuestions', roundId: round.id, questions: list });
-    const copy = () => qs.map((q) => ({ text: q.text, options: q.options.slice(), correct: q.correct, media: q.media || '' }));
+    const copy = () => qs.map((q) => ({ ...q, options: q.options.slice() }));
+    const mediaRow = (q, qi) => [
+      el('div', { class: 'row', style: 'margin-top:.5rem' },
+        el('span', { class: 'muted', text: '🖼 Answer media' }),
+        (() => { const inp = el('input', { type: 'text', class: 'grow', placeholder: 'Optional: image/GIF URL (https://….gif) or YouTube link – shown when the answer is revealed', 'data-key': `q${qi}media`,
+          onchange: (e) => { const l = copy(); l[qi].media = e.target.value; commit(l); } }); inp.value = q.media || ''; return inp; })()),
+      q.media ? el('div', { class: 'muted', style: 'margin-top:.25rem', text: (() => { const m = L.parseMedia(q.media); return m ? (m.kind === 'youtube' ? '✓ YouTube video – plays on reveal' : '✓ Image – shown on reveal') : '⚠ Not recognised: use an https:// link to an image/GIF (.png .jpg .gif .webp …) or a YouTube video'; })() }) : null,
+    ];
+    const blank = (type) => (type === 'text' ? { type: 'text', text: '', answer: '', media: '' } : { type: 'choice', text: '', options: ['', '', '', ''], correct: null, media: '' });
     const cards = qs.map((q, qi) => el('div', { class: 'q-card' },
       el('div', { class: 'row' },
         el('b', { class: 'muted', text: 'Q' + (qi + 1) }),
@@ -130,29 +139,33 @@
         el('button', { class: 'icon', text: '▲', disabled: qi === 0, onclick: () => { const l = copy(); [l[qi - 1], l[qi]] = [l[qi], l[qi - 1]]; commit(l); } }),
         el('button', { class: 'icon', text: '▼', disabled: qi === qs.length - 1, onclick: () => { const l = copy(); [l[qi + 1], l[qi]] = [l[qi], l[qi + 1]]; commit(l); } }),
         el('button', { class: 'icon del', text: '✕', title: 'Delete question', onclick: () => commit(copy().filter((_, j) => j !== qi)) })),
-      q.options.map((o, oi) => el('div', { class: 'q-opt' },
-        el('span', { class: 'letter', text: 'ABCD'[oi] }),
-        (() => { const inp = el('input', { type: 'text', placeholder: 'Option ' + 'ABCD'[oi], 'data-key': `q${qi}o${oi}`,
-          onchange: (e) => { const l = copy(); l[qi].options[oi] = e.target.value; commit(l); } }); inp.value = o; return inp; })(),
-        el('input', { type: 'radio', name: 'correct' + qi, title: 'Mark as correct answer', checked: q.correct === oi,
-          onclick: () => { const l = copy(); l[qi].correct = oi; commit(l); } }))),
-      el('div', { class: 'row', style: 'margin-top:.5rem' },
-        el('span', { class: 'muted', text: '🖼 Answer media' }),
-        (() => { const inp = el('input', { type: 'text', class: 'grow', placeholder: 'Optional: image/GIF URL (https://….gif) or YouTube link – shown when the answer is revealed',
-          onchange: (e) => { const l = copy(); l[qi].media = e.target.value; commit(l); } }); inp.value = q.media || ''; return inp; })()),
-      q.media ? el('div', { class: 'muted', style: 'margin-top:.25rem', text: (() => { const m = L.parseMedia(q.media); return m ? (m.kind === 'youtube' ? '✓ YouTube video – plays on reveal' : '✓ Image – shown on reveal') : '⚠ Not recognised: use an https:// link to an image/GIF (.png .jpg .gif .webp …) or a YouTube video'; })() }) : null,
-      el('div', { class: 'row muted', style: 'margin-top:.5rem' },
-        el('span', { text: q.correct == null ? 'No correct answer set (optional – needed for "Reveal answer")' : `Correct answer: ${'ABCD'[q.correct]}` }),
-        q.correct == null ? null : el('button', { class: 'btn small ghost', text: 'Clear', onclick: () => { const l = copy(); l[qi].correct = null; commit(l); } }))));
+      el('div', { class: 'pills small' }, [['choice', 'Multiple choice'], ['text', 'Written answer']].map(([type, label]) => el('button', {
+        class: 'pill' + ((L.isText(q) ? 'text' : 'choice') === type ? ' on' : ''), text: label,
+        onclick: () => { if ((L.isText(q) ? 'text' : 'choice') === type) return; const l = copy(); l[qi] = { ...blank(type), text: q.text }; commit(l); } }))),
+      L.isText(q)
+        ? [el('div', { class: 'q-opt' }, el('span', { class: 'letter', text: '✎' }),
+            (() => { const inp = el('input', { type: 'text', placeholder: 'Model answer (optional – shown on "Reveal answer")', 'data-key': `q${qi}ans`,
+              onchange: (e) => { const l = copy(); l[qi].answer = e.target.value; commit(l); } }); inp.value = q.answer || ''; return inp; })()),
+          ...mediaRow(q, qi),
+          el('div', { class: 'row muted', style: 'margin-top:.5rem', text: 'Teams write their answer down – nothing but the question is shown on screen until you reveal.' })]
+        : [...q.options.map((o, oi) => el('div', { class: 'q-opt' },
+            el('span', { class: 'letter', text: 'ABCD'[oi] }),
+            (() => { const inp = el('input', { type: 'text', placeholder: 'Option ' + 'ABCD'[oi], 'data-key': `q${qi}o${oi}`,
+              onchange: (e) => { const l = copy(); l[qi].options[oi] = e.target.value; commit(l); } }); inp.value = o; return inp; })(),
+            el('input', { type: 'radio', name: 'correct' + qi, title: 'Mark as correct answer', checked: q.correct === oi,
+              onclick: () => { const l = copy(); l[qi].correct = oi; commit(l); } }))),
+          ...mediaRow(q, qi),
+          el('div', { class: 'row muted', style: 'margin-top:.5rem' },
+            el('span', { text: q.correct == null ? 'No correct answer set (optional – needed for "Reveal answer")' : `Correct answer: ${'ABCD'[q.correct]}` }),
+            q.correct == null ? null : el('button', { class: 'btn small ghost', text: 'Clear', onclick: () => { const l = copy(); l[qi].correct = null; commit(l); } }))]));
     return el('div', { class: 'panel' },
       el('div', { class: 'card' }, el('h2', { text: 'Questions by round' }),
         roundPills(qRound, (id) => { qRound = id; render(true); }, (r) => r.questions.length > 0),
         cards.length ? cards : el('p', { class: 'muted', text: 'No questions for this round yet. Add one to use the on-screen question presentation.' }),
-        el('button', { class: 'btn small', text: '+ Add question', onclick: () => {
-          const l = copy(); l.push({ text: '', options: ['', '', '', ''], correct: null, media: '' });
-          pendingFocus = `q${l.length - 1}`; commit(l);
-        } })),
-      el('p', { class: 'muted', text: 'Use ◀ ▶ (or arrow keys / Space) in the bar at the bottom to step through: leaderboard → question → question + options → leaderboard → …' }));
+        el('div', { class: 'row' },
+          el('button', { class: 'btn small', text: '+ Multiple choice', onclick: () => { const l = copy(); l.push(blank('choice')); pendingFocus = `q${l.length - 1}`; commit(l); } }),
+          el('button', { class: 'btn small', text: '+ Written answer', onclick: () => { const l = copy(); l.push(blank('text')); pendingFocus = `q${l.length - 1}`; commit(l); } }))),
+      el('p', { class: 'muted', text: 'Use ◀ ▶ (or arrow keys / Space) in the bar at the bottom to step through: leaderboard → question → question + options (multiple choice only) → leaderboard → …' }));
   }
 
   function buildTeams() {
@@ -218,7 +231,38 @@
       roundPills(selRound, (id) => { selRound = id; render(true); }, complete),
       el('div', { class: 'muted', style: 'margin-bottom:.6rem', text: round.maxScore > 0 ? `${round.name} – max ${round.maxScore} points. Enter moves to the next team.` : `${round.name} – Enter moves to the next team.` }),
       el('div', { class: 'score-row score-head' }, el('span'), el('span', { text: 'Team' }), el('span', { text: 'This round' }), el('span', { text: 'Total · rank' })),
-      rows));
+      rows),
+      buildAdjustments());
+  }
+
+  // Bonus / penalty points outside the rounds (e.g. punish a cheat, reward whoever spotted it).
+  const fmtPts = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
+  function buildAdjustments() {
+    const pick = el('select', { 'data-key': 'adj-team', onchange: (e) => { adjDraft.teamId = e.target.value; } }, state.teams.map((t) => el('option', { value: t.id, text: t.name })));
+    if (state.teams.some((t) => t.id === adjDraft.teamId)) pick.value = adjDraft.teamId;
+    const pts = el('input', { type: 'text', inputmode: 'decimal', class: 'num', placeholder: 'Pts', 'data-key': 'adj-pts', onchange: (e) => { adjDraft.points = e.target.value; } });
+    pts.value = adjDraft.points;
+    const why = el('input', { type: 'text', class: 'grow', maxlength: 100, placeholder: 'Reason (shown on the big screen) – e.g. caught using a phone', 'data-key': 'adj-why', onchange: (e) => { adjDraft.reason = e.target.value; } });
+    why.value = adjDraft.reason;
+    const apply = async (sign) => {
+      adjDraft = { teamId: pick.value, points: pts.value, reason: why.value };
+      const n = Math.abs(Number(pts.value));
+      if (!(n > 0) || !Number.isFinite(n)) { pts.classList.remove('shake'); void pts.offsetWidth; pts.classList.add('shake'); toast('Enter the number of points (more than 0)'); return; }
+      pendingFocus = 'adj-pts';
+      if (await dispatch({ type: 'addAdjustment', teamId: pick.value, points: sign * n, reason: why.value })) adjDraft = { teamId: pick.value, points: '', reason: '' };
+    };
+    const byTeam = new Map(state.teams.map((t) => [t.id, t]));
+    const log = state.adjustments.slice().reverse().map((a) => el('div', { class: 'row adj ' + L.adjKind(a) },
+      el('b', { class: 'adj-pts', text: fmtPts(a.points) }),
+      el('span', { class: 'grow', text: (byTeam.get(a.teamId) || {}).name + (a.reason ? ' – ' + a.reason : '') }),
+      el('button', { class: 'icon del', text: '✕', title: 'Remove this adjustment', onclick: () => dispatch({ type: 'removeAdjustment', id: a.id }) })));
+    return el('div', { class: 'card' }, el('h2', { text: 'Penalties & bonuses' }),
+      el('p', { class: 'muted', text: 'Applied to a team’s total on top of the round scores. The big screen announces each one with its reason.' }),
+      el('div', { class: 'row' }, pick, pts, why),
+      el('div', { class: 'row' },
+        el('button', { class: 'btn small coral', text: '🚨 Penalty', onclick: () => apply(-1) }),
+        el('button', { class: 'btn small gold', text: '🎁 Bonus', onclick: () => apply(1) })),
+      log.length ? log : el('p', { class: 'muted', text: 'None yet.' }));
   }
 
 
@@ -333,7 +377,7 @@
     const steps = L.presentationSteps(state);
     const i = state.presentation.step;
     const cur = L.currentQuestion(state);
-    const canReveal = cur && cur.step.type === 'options' && cur.question.correct != null;
+    const canReveal = L.canReveal(cur);
     const dots = el('div', { class: 'dots' }, steps.map((s, j) => el('i', { class: (s.type === 'board' ? 'board ' : '') + (j === i ? 'on' : ''), title: describeStep(s),
       onclick: () => dispatch({ type: 'presentGoto', step: j }) })));
     return [

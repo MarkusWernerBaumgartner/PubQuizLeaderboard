@@ -34,6 +34,9 @@ Information is never lost when an effect is off: rank arrows, final totals, the 
 | Round complete: "After Round N" pop | same | The round chip bounces in |
 | Answer reveal: confetti | You press *Reveal answer* | A burst over the correct answer |
 | Answer reveal: pop animation | same | The correct option bounces (it still turns green and the others still dim) |
+| Penalty / bonus: banner | You give a team penalty or bonus points (Scoring tab) | Banner naming the team, the points and the reason |
+| Penalty: screen shake | A penalty is given | The scoreboard shakes |
+| Bonus: confetti | A bonus is given | A burst from the top of the screen |
 
 ### Score updates (Leaderboard)
 
