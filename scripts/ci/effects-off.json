@@ -1,26 +1,114 @@
 {
-  "size": [1280, 720],
-  "windows": ["leaderboard"],
+  "size": [
+    1280,
+    720
+  ],
+  "windows": [
+    "leaderboard"
+  ],
   "actions": [
-    { "wait": 2000 },
-    { "settings": { "preset": "off" } },
-    { "wait": 500 },
-    { "eval": "document.documentElement.classList.contains('fx-off-celebrate-lead-change-banner')", "window": "leaderboard", "equals": true },
-    { "eval": "getComputedStyle(document.querySelector('.ambient')).display", "window": "leaderboard", "equals": "none" },
-    { "dispatch": { "type": "setScore", "teamId": "@team:4", "roundId": "@round:3", "value": 10 } },
-    { "wait": 400 },
-    { "eval": "Confetti.active()", "window": "leaderboard", "equals": 0 },
-    { "eval": "document.getElementById('banner').classList.contains('on')", "window": "leaderboard", "equals": false },
-    { "eval": "document.querySelectorAll('.chipplus').length", "window": "leaderboard", "equals": 0 },
-    { "eval": "document.querySelector('.row.pulse') === null", "window": "leaderboard", "equals": true },
-    { "eval": "document.querySelector('.row.r1 .nm').textContent", "window": "leaderboard", "equals": "Pint Sized Geniuses" },
-    { "eval": "document.querySelector('.row.r1 .total').textContent", "window": "leaderboard", "equals": "31" },
-    { "settings": { "preset": "party" } },
-    { "settings": { "flags": { "celebrate.leadChange.banner": false } } },
-    { "wait": 300 },
-    { "dispatch": { "type": "setScore", "teamId": "@team:3", "roundId": "@round:3", "value": 10 } },
-    { "wait": 400 },
-    { "eval": "Confetti.active() > 0", "window": "leaderboard", "equals": true },
-    { "eval": "document.getElementById('banner').classList.contains('on')", "window": "leaderboard", "equals": false }
+    {
+      "wait": 2000
+    },
+    {
+      "settings": {
+        "followSystemReducedMotion": false
+      }
+    },
+    {
+      "settings": {
+        "preset": "off"
+      }
+    },
+    {
+      "wait": 500
+    },
+    {
+      "eval": "document.documentElement.classList.contains('fx-off-celebrate-lead-change-banner')",
+      "window": "leaderboard",
+      "equals": true
+    },
+    {
+      "eval": "getComputedStyle(document.querySelector('.ambient')).display",
+      "window": "leaderboard",
+      "equals": "none"
+    },
+    {
+      "dispatch": {
+        "type": "setScore",
+        "teamId": "@team:4",
+        "roundId": "@round:3",
+        "value": 10
+      }
+    },
+    {
+      "wait": 400
+    },
+    {
+      "eval": "Confetti.active()",
+      "window": "leaderboard",
+      "equals": 0
+    },
+    {
+      "eval": "document.getElementById('banner').classList.contains('on')",
+      "window": "leaderboard",
+      "equals": false
+    },
+    {
+      "eval": "document.querySelectorAll('.chipplus').length",
+      "window": "leaderboard",
+      "equals": 0
+    },
+    {
+      "eval": "document.querySelector('.row.pulse') === null",
+      "window": "leaderboard",
+      "equals": true
+    },
+    {
+      "eval": "document.querySelector('.row.r1 .nm').textContent",
+      "window": "leaderboard",
+      "equals": "Pint Sized Geniuses"
+    },
+    {
+      "eval": "document.querySelector('.row.r1 .total').textContent",
+      "window": "leaderboard",
+      "equals": "31"
+    },
+    {
+      "settings": {
+        "preset": "party"
+      }
+    },
+    {
+      "settings": {
+        "flags": {
+          "celebrate.leadChange.banner": false
+        }
+      }
+    },
+    {
+      "wait": 300
+    },
+    {
+      "dispatch": {
+        "type": "setScore",
+        "teamId": "@team:3",
+        "roundId": "@round:3",
+        "value": 10
+      }
+    },
+    {
+      "wait": 400
+    },
+    {
+      "eval": "Confetti.active() > 0",
+      "window": "leaderboard",
+      "equals": true
+    },
+    {
+      "eval": "document.getElementById('banner').classList.contains('on')",
+      "window": "leaderboard",
+      "equals": false
+    }
   ]
 }
