@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" data-page="">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+  <title>Pub Quiz Scoring</title>
+  <link rel="stylesheet" href="common/theme.css">
+  <link rel="stylesheet" href="launcher.css">
+</head>
+<body>
+  <div class="ambient"></div>
+  <main class="launcher">
+    <div class="brand">
+      <img class="crest" data-brand="crest" src="assets/default-crest.svg" alt="">
+      <img class="wordmark" data-brand="wordmark" alt="" hidden>
+      <span class="wordmark-text" data-brand="wordmark-fallback" hidden></span>
+    </div>
+    <h1 id="title" class="title"></h1>
+    <div class="choices">
+      <button class="choice board" id="open-board">
+        <span class="emoji">🏆</span>
+        <span class="label">Leaderboard</span>
+        <span class="hint">The big-screen display</span>
+      </button>
+      <button class="choice admin" id="open-admin">
+        <span class="emoji">🎛️</span>
+        <span class="label">Admin</span>
+        <span class="hint">Set up &amp; score the quiz</span>
+      </button>
+    </div>
+    <label class="display-pick" id="display-pick" hidden>
+      Show leaderboard on
+      <select id="display"></select>
+    </label>
+    <p class="foot">Tip: F11 toggles fullscreen in any window &nbsp;·&nbsp; Esc leaves it &nbsp;·&nbsp; <button class="linkbtn" id="open-branding">⚙ Branding settings</button></p>
+  </main>
+  <script src="../shared/branding.js"></script>
+  <script src="common/branding.js"></script>
+  <script src="common/ambient.js"></script>
+  <script src="launcher.js"></script>
+</body>
+</html>

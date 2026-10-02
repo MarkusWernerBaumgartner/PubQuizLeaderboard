@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-page="Admin">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+  <title>Pub Quiz – Admin</title>
+  <link rel="stylesheet" href="common/theme.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="ambient"></div>
+  <div class="app">
+    <header>
+      <img class="crest" data-brand="crest" src="assets/default-crest.svg" alt="">
+      <div class="head-title"><h1 id="head-title"></h1><span class="live"><i></i>LIVE</span></div>
+      <nav id="nav"></nav>
+      <div class="tools">
+        <button class="btn small" id="undo" title="Undo last score change">↶ Undo</button>
+        <button class="btn small gold" id="open-board">📺 Leaderboard</button>
+        <button class="btn small ghost" id="fs">⛶</button>
+        <details class="menu">
+          <summary class="btn small ghost">Data ▾</summary>
+          <div class="menu-list">
+            <button id="export">Export quiz…</button>
+            <button id="load">Load quiz…</button>
+            <button id="clear" class="danger">Clear all scores</button>
+            <button id="reset" class="danger">Reset everything</button>
+          </div>
+        </details>
+      </div>
+    </header>
+    <main id="main"></main>
+    <footer id="present"></footer>
+  </div>
+  <div id="modal" hidden></div>
+  <div id="toast" hidden></div>
+  <script src="../shared/logic.js"></script>
+  <script src="../shared/branding.js"></script>
+  <script src="common/branding.js"></script>
+  <script src="common/ambient.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+.launcher { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.6rem; padding: 2rem; }
+.brand { display: flex; align-items: center; gap: 1.4rem; animation: pop .7s cubic-bezier(.2,1.4,.4,1) both; }
+.crest { height: 110px; filter: drop-shadow(0 8px 18px rgba(0,0,0,.45)); animation: wobble 5s ease-in-out infinite; }
+.wordmark { height: 90px; }
+.wordmark-text { font: 700 2.6rem var(--display); color: var(--text); max-width: 14ch; line-height: 1.05; }
+.linkbtn { font: inherit; color: var(--accent-1); background: none; border: 0; cursor: pointer; text-decoration: underline; padding: 0; }
+@keyframes wobble { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg) translateY(-4px); } }
+@keyframes pop { from { opacity: 0; transform: scale(.6) translateY(30px); } to { opacity: 1; transform: none; } }
+.title { font-size: 2.4rem; text-align: center; color: var(--accent-1); text-shadow: 0 3px 0 rgba(0,0,0,.35); animation: pop .7s .1s cubic-bezier(.2,1.4,.4,1) both; }
+.choices { display: flex; gap: 1.6rem; margin-top: .6rem; }
+.choice {
+  font-family: var(--body);
+  width: 260px; padding: 1.6rem 1rem; border: 0; border-radius: 28px; cursor: pointer; color: var(--bg);
+  display: flex; flex-direction: column; align-items: center; gap: .3rem;
+  box-shadow: 0 8px 0 rgba(0,0,0,.35); transition: transform .18s cubic-bezier(.2,1.6,.4,1), box-shadow .18s;
+  animation: pop .7s .2s cubic-bezier(.2,1.4,.4,1) both;
+}
+.choice.admin { animation-delay: .3s; }
+.choice:hover { transform: translateY(-6px) rotate(-1.5deg) scale(1.04); box-shadow: 0 14px 0 rgba(0,0,0,.35); }
+.choice:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.35); }
+.choice.board { background: var(--accent-1); }
+.choice.admin { background: var(--accent-3); }
+.emoji { font-size: 3.2rem; }
+.label { font-family: var(--display); font-weight: 700; font-size: 1.9rem; }
+.hint { font-weight: 800; opacity: .7; font-size: .95rem; }
+.display-pick { color: var(--muted); font-weight: 600; display: flex; gap: .6rem; align-items: center; }
+.display-pick select { font: inherit; padding: .35em .8em; border-radius: 999px; border: 2px solid var(--line); background: var(--bg-deep); color: var(--text); }
+.foot { color: var(--muted); font-size: .9rem; margin: 0; }

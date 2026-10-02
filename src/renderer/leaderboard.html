@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" data-page="Leaderboard">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+  <title>Pub Quiz – Leaderboard</title>
+  <link rel="stylesheet" href="common/theme.css">
+  <link rel="stylesheet" href="leaderboard.css">
+</head>
+<body>
+  <div class="ambient"></div>
+  <div class="stage" id="stage">
+    <section class="board">
+      <header>
+        <img class="crest" data-brand="crest" src="assets/default-crest.svg" alt="">
+        <h1 id="title"></h1>
+        <span class="chip" id="after"></span>
+      </header>
+      <div class="rows" id="rows"></div>
+      <div class="legend" id="legend"></div>
+      <div class="stats" id="stats"></div>
+    </section>
+    <aside class="qpanel" id="qpanel"><div class="qinner" id="qinner"></div></aside>
+  </div>
+  <div class="banner" id="banner"></div>
+  <div class="rules" id="rules">
+    <div class="rules-inner">
+      <div class="rules-brand"><img data-brand="crest" src="assets/default-crest.svg" alt=""><img data-brand="wordmark" alt="" hidden><span class="wordmark-text" data-brand="wordmark-fallback" hidden></span></div>
+      <h2 id="rules-title"></h2>
+      <h3>The Rules</h3>
+      <ol id="rules-list"></ol>
+    </div>
+  </div>
+  <script src="../shared/logic.js"></script>
+  <script src="../shared/branding.js"></script>
+  <script src="common/branding.js"></script>
+  <script src="common/ambient.js"></script>
+  <script src="common/animations.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="leaderboard.js"></script>
+</body>
+</html>

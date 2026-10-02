@@ -1,0 +1,353 @@
+{
+  "version": 1,
+  "title": "Sample Pub Quiz",
+  "rounds": [
+    {
+      "id": "r6",
+      "name": "General Knowledge",
+      "maxScore": 10,
+      "questions": [
+        {
+          "text": "What is the capital city of Australia?",
+          "options": [
+            "Sydney",
+            "Canberra",
+            "Melbourne",
+            "Perth"
+          ],
+          "correct": 1
+        },
+        {
+          "text": "Which planet is known as the Red Planet?",
+          "options": [
+            "Venus",
+            "Jupiter",
+            "Mars",
+            "Mercury"
+          ],
+          "correct": 2
+        }
+      ]
+    },
+    {
+      "id": "r7",
+      "name": "Geography",
+      "maxScore": 10,
+      "questions": [
+        {
+          "text": "Which is the longest river in Africa?",
+          "options": [
+            "Nile",
+            "Congo",
+            "Niger",
+            "Zambezi"
+          ],
+          "correct": 0
+        },
+        {
+          "text": "Mount Kilimanjaro is in which country?",
+          "options": [
+            "Kenya",
+            "Tanzania",
+            "Uganda",
+            "Ethiopia"
+          ],
+          "correct": 1
+        }
+      ]
+    },
+    {
+      "id": "r8",
+      "name": "Music Round",
+      "maxScore": 10,
+      "questions": [
+        {
+          "text": "Which band released \"Bohemian Rhapsody\"?",
+          "options": [
+            "Queen",
+            "The Beatles",
+            "ABBA",
+            "Oasis"
+          ],
+          "correct": 0
+        }
+      ]
+    },
+    {
+      "id": "r9",
+      "name": "Science & Nature",
+      "maxScore": 10,
+      "questions": [
+        {
+          "text": "What is the chemical symbol for gold?",
+          "options": [
+            "Ag",
+            "Au",
+            "Gd",
+            "Go"
+          ],
+          "correct": 1
+        },
+        {
+          "text": "How many legs does a spider have?",
+          "options": [
+            "6",
+            "8",
+            "10",
+            "12"
+          ],
+          "correct": 1
+        }
+      ]
+    },
+    {
+      "id": "r10",
+      "name": "Picture Round",
+      "maxScore": 10,
+      "questions": []
+    }
+  ],
+  "teams": [
+    {
+      "id": "t11",
+      "name": "Quizzy Rascals",
+      "colour": "#ffc83d",
+      "scores": {
+        "r6": 7,
+        "r7": 5,
+        "r8": 8
+      }
+    },
+    {
+      "id": "t12",
+      "name": "The Know-It-Owls",
+      "colour": "#ff6b6b",
+      "scores": {
+        "r6": 9,
+        "r7": 4,
+        "r8": 6
+      }
+    },
+    {
+      "id": "t13",
+      "name": "Trivia Newton John",
+      "colour": "#4ecdc4",
+      "scores": {
+        "r6": 6,
+        "r7": 9,
+        "r8": 5
+      }
+    },
+    {
+      "id": "t14",
+      "name": "Mixed Doubles",
+      "colour": "#a78bfa",
+      "scores": {
+        "r6": 8,
+        "r7": 7,
+        "r8": 7
+      }
+    },
+    {
+      "id": "t15",
+      "name": "Pint Sized Geniuses",
+      "colour": "#ff9f43",
+      "scores": {
+        "r6": 4,
+        "r7": 8,
+        "r8": 9
+      }
+    },
+    {
+      "id": "t16",
+      "name": "Les Quizerables",
+      "colour": "#54a0ff",
+      "scores": {
+        "r6": 5,
+        "r7": 6,
+        "r8": 4
+      }
+    },
+    {
+      "id": "t17",
+      "name": "Tab Tab Tab",
+      "colour": "#f368e0",
+      "scores": {
+        "r6": 9,
+        "r7": 3,
+        "r8": 3
+      }
+    },
+    {
+      "id": "t18",
+      "name": "Quiz Team Aguilera",
+      "colour": "#7bed9f",
+      "scores": {
+        "r6": 3,
+        "r7": 7,
+        "r8": 6
+      }
+    }
+  ],
+  "rules": {
+    "items": [
+      "One answer sheet per team, and one team captain to hand it in.",
+      "No phones, no Googling. The quizmaster sees all.",
+      "Keep your answers secret from other tables.",
+      "The quizmaster's decision is final (and slightly biased).",
+      "Be loud, be silly, be kind. Most importantly: have fun!"
+    ],
+    "visible": false
+  },
+  "presentation": {
+    "step": 0,
+    "revealAnswer": false
+  },
+  "history": [
+    {
+      "teamId": "t11",
+      "roundId": "r6",
+      "prev": null,
+      "next": 7
+    },
+    {
+      "teamId": "t11",
+      "roundId": "r7",
+      "prev": null,
+      "next": 5
+    },
+    {
+      "teamId": "t11",
+      "roundId": "r8",
+      "prev": null,
+      "next": 8
+    },
+    {
+      "teamId": "t12",
+      "roundId": "r6",
+      "prev": null,
+      "next": 9
+    },
+    {
+      "teamId": "t12",
+      "roundId": "r7",
+      "prev": null,
+      "next": 4
+    },
+    {
+      "teamId": "t12",
+      "roundId": "r8",
+      "prev": null,
+      "next": 6
+    },
+    {
+      "teamId": "t13",
+      "roundId": "r6",
+      "prev": null,
+      "next": 6
+    },
+    {
+      "teamId": "t13",
+      "roundId": "r7",
+      "prev": null,
+      "next": 9
+    },
+    {
+      "teamId": "t13",
+      "roundId": "r8",
+      "prev": null,
+      "next": 5
+    },
+    {
+      "teamId": "t14",
+      "roundId": "r6",
+      "prev": null,
+      "next": 8
+    },
+    {
+      "teamId": "t14",
+      "roundId": "r7",
+      "prev": null,
+      "next": 7
+    },
+    {
+      "teamId": "t14",
+      "roundId": "r8",
+      "prev": null,
+      "next": 7
+    },
+    {
+      "teamId": "t15",
+      "roundId": "r6",
+      "prev": null,
+      "next": 4
+    },
+    {
+      "teamId": "t15",
+      "roundId": "r7",
+      "prev": null,
+      "next": 8
+    },
+    {
+      "teamId": "t15",
+      "roundId": "r8",
+      "prev": null,
+      "next": 9
+    },
+    {
+      "teamId": "t16",
+      "roundId": "r6",
+      "prev": null,
+      "next": 5
+    },
+    {
+      "teamId": "t16",
+      "roundId": "r7",
+      "prev": null,
+      "next": 6
+    },
+    {
+      "teamId": "t16",
+      "roundId": "r8",
+      "prev": null,
+      "next": 4
+    },
+    {
+      "teamId": "t17",
+      "roundId": "r6",
+      "prev": null,
+      "next": 9
+    },
+    {
+      "teamId": "t17",
+      "roundId": "r7",
+      "prev": null,
+      "next": 3
+    },
+    {
+      "teamId": "t17",
+      "roundId": "r8",
+      "prev": null,
+      "next": 3
+    },
+    {
+      "teamId": "t18",
+      "roundId": "r6",
+      "prev": null,
+      "next": 3
+    },
+    {
+      "teamId": "t18",
+      "roundId": "r7",
+      "prev": null,
+      "next": 7
+    },
+    {
+      "teamId": "t18",
+      "roundId": "r8",
+      "prev": null,
+      "next": 6
+    }
+  ],
+  "nextId": 19
+}

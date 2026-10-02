@@ -1,0 +1,24 @@
+# dependencies / build output
+node_modules/
+dist/
+*.AppImage
+
+# personal & local-only (branding presets, private notes, tooling state)
+/local/
+/private/
+.remember/
+.claude/
+
+# college / brand artwork must never be committed
+*.eps
+
+# quiz data (the app stores it outside the repo; this is a second line of defence)
+quiz*.json
+backups/
+*.corrupt-*.json
+branding.json
+branding-assets/
+
+# only the generic sample quiz is tracked from examples/
+/examples/*
+!/examples/sample-quiz.json

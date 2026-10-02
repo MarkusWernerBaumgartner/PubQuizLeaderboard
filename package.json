@@ -1,0 +1,48 @@
+{
+  "name": "pubquiz-scoring",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "electron . --no-sandbox",
+    "dist": "electron-builder --linux AppImage",
+    "privacy-check": "node scripts/privacy-check.js"
+  },
+  "keywords": [],
+  "author": "Markus Baumgartner",
+  "license": "MIT",
+  "description": "Desktop scoring system and live leaderboard for pub quizzes",
+  "devDependencies": {
+    "@fontsource/fredoka": "^5.3.0",
+    "@fontsource/nunito": "^5.3.0",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "org.pubquiz.scoring",
+    "productName": "Pub Quiz Scoring",
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "package.json",
+      "build/icon.png"
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Game",
+      "executableArgs": [
+        "--no-sandbox"
+      ],
+      "syncDesktopName": true,
+      "icon": "build/icon.png"
+    },
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "desktopName": "pubquiz-scoring.desktop",
+  "private": true
+}
