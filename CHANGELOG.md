@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - **Answer media**: attach an image/GIF URL or YouTube link to a question; it expands over the leaderboard when the answer is revealed.
 
+### Fixed
+- The `admin-branding.png` documentation screenshot showed the Effects tab; it now shows the Branding tab.
+
+### Changed
+- User guide gains a Branding section and Effects screenshot; README describes Save quiz as… / Load quiz… autosave.
+
 ## [1.1.0] - 2026-10-02
 
 ### Added
