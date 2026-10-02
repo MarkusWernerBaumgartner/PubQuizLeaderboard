@@ -19,6 +19,10 @@
   const isObj = (o) => o !== null && typeof o === 'object' && !Array.isArray(o);
   const str = (v) => (typeof v === 'string' ? v.trim() : '');
 
+  // How the slideshow is stepped: back to the leaderboard between questions, and question text before the options.
+  const defaultFlow = () => ({ returnToBoard: true, splitOptions: true });
+  const cleanFlow = (f) => ({ returnToBoard: !isObj(f) || f.returnToBoard !== false, splitOptions: !isObj(f) || f.splitOptions !== false });
+
   // opts.title seeds the quiz title (the host's configured default); falls back to DEFAULT_TITLE.
   function defaultState(opts) {
     const rounds = [];
@@ -31,6 +35,7 @@
       adjustments: [],
       rules: { items: DEFAULT_RULES.slice(), visible: true },
       presentation: { step: 0, revealAnswer: false },
+      flow: defaultFlow(),
       history: [],
       nextId: 6,
     };
@@ -114,7 +119,7 @@
       ? typeof h.adjId === 'string' && adjIds.has(h.adjId)
       : typeof h.teamId === 'string' && typeof h.roundId === 'string')) : [];
     const state = {
-      version: 1, title: obj.title, rounds, teams, adjustments, rules,
+      version: 1, title: obj.title, rounds, teams, adjustments, rules, flow: cleanFlow(obj.flow),
       presentation: { step: Number.isInteger(obj.presentation && obj.presentation.step) ? obj.presentation.step : 0, revealAnswer: false },
       history, nextId: Math.max(maxN + 1, Number.isInteger(obj.nextId) ? obj.nextId : 0),
     };
@@ -122,15 +127,21 @@
   }
 
   // ---- presentation -------------------------------------------------------
+  // Multiple choice: [question] → [question + options] (or one combined step when splitOptions is off).
+  // Written: just [question]. Between questions: a leaderboard step, unless returnToBoard is off (one is always kept at the end).
   function presentationSteps(state) {
+    const flow = cleanFlow(state.flow);
     const steps = [{ type: 'board' }];
     for (const round of state.rounds) {
-      (round.questions || []).forEach((_, qIndex) => {
-        steps.push({ type: 'question', roundId: round.id, qIndex });
-        if (!isText(round.questions[qIndex])) steps.push({ type: 'options', roundId: round.id, qIndex });
-        steps.push({ type: 'board' });
+      (round.questions || []).forEach((q, qIndex) => {
+        const at = { roundId: round.id, qIndex };
+        if (isText(q)) steps.push({ type: 'question', ...at });
+        else if (flow.splitOptions) steps.push({ type: 'question', ...at }, { type: 'options', ...at });
+        else steps.push({ type: 'options', ...at });
+        if (flow.returnToBoard) steps.push({ type: 'board' });
       });
     }
+    if (!flow.returnToBoard && steps.length > 1) steps.push({ type: 'board' });
     return steps;
   }
   function currentQuestion(state) {
@@ -257,6 +268,21 @@
         s.history = s.history.filter((h) => h.adjId !== action.id);
         return s;
       }
+      // Presentation flow switches; keeps showing the same question afterwards.
+      case 'setFlow': {
+        const flow = cleanFlow({ ...s.flow, ...(isObj(action.flow) ? action.flow : {}) });
+        if (flow.returnToBoard === s.flow.returnToBoard && flow.splitOptions === s.flow.splitOptions) return state;
+        const old = presentationSteps(s)[s.presentation.step];
+        s.flow = flow;
+        const steps = presentationSteps(s);
+        let i = old && old.type !== 'board'
+          ? steps.findIndex((x) => x.roundId === old.roundId && x.qIndex === old.qIndex && x.type === old.type)
+          : -1;
+        if (i < 0 && old && old.type !== 'board') i = steps.findIndex((x) => x.roundId === old.roundId && x.qIndex === old.qIndex);
+        if (i >= 0) s.presentation.step = i;
+        s.presentation.revealAnswer = false;
+        return clampPresentation(s);
+      }
       case 'resetAll':
         return defaultState({ title: action.title });
       case 'setRules': {
@@ -361,5 +387,5 @@
     return { roundWinners, biggestClimber, bestWorst, leadChanges, gap, woodenSpoon };
   }
 
-  return { DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, parseMedia, scoredRounds, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
+  return { DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, parseMedia, scoredRounds, defaultFlow, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
 });
