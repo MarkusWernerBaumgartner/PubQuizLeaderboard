@@ -22,3 +22,4 @@ branding-assets/
 # only the generic sample quiz is tracked from examples/
 /examples/*
 !/examples/sample-quiz.json
+smoke-out

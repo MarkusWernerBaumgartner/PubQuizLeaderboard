@@ -11,7 +11,15 @@ contextBridge.exposeInMainWorld('quiz', {
   openWindow: (kind, opts) => ipcRenderer.invoke('window:open', kind, opts),
   displays: () => ipcRenderer.invoke('displays:list'),
   toggleFullscreen: () => ipcRenderer.invoke('window:fullscreen'),
+  saveAs: () => ipcRenderer.invoke('data:saveAs'),
   exportState: () => ipcRenderer.invoke('data:export'),
+  unlinkSave: () => ipcRenderer.invoke('data:unlink'),
+  getSaveStatus: () => ipcRenderer.invoke('save:get'),
+  onSaveChange: (cb) => {
+    const handler = (_e, status) => cb(status);
+    ipcRenderer.on('save:changed', handler);
+    return () => ipcRenderer.removeListener('save:changed', handler);
+  },
   loadState: () => ipcRenderer.invoke('data:load'),
   getBranding: () => ipcRenderer.invoke('branding:get'),
   setBranding: (patch) => ipcRenderer.invoke('branding:set', patch),
@@ -26,5 +34,6 @@ contextBridge.exposeInMainWorld('quiz', {
     return () => ipcRenderer.removeListener('branding:changed', handler);
   },
   onAdminSection: (cb) => ipcRenderer.on('admin:section', (_e, section) => cb(section)),
+  appInfo: () => ipcRenderer.invoke('app:info'),
   quit: () => ipcRenderer.invoke('app:quit'),
 });

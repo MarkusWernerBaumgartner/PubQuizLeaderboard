@@ -15,14 +15,17 @@
       <div class="head-title"><h1 id="head-title"></h1><span class="live"><i></i>LIVE</span></div>
       <nav id="nav"></nav>
       <div class="tools">
+        <span id="savechip" class="savechip"></span>
         <button class="btn small" id="undo" title="Undo last score change">↶ Undo</button>
         <button class="btn small gold" id="open-board">📺 Leaderboard</button>
         <button class="btn small ghost" id="fs">⛶</button>
         <details class="menu">
           <summary class="btn small ghost">Data ▾</summary>
           <div class="menu-list">
-            <button id="export">Export quiz…</button>
+            <button id="saveas">Save quiz as… (then autosaves)</button>
             <button id="load">Load quiz…</button>
+            <button id="export">Export a copy…</button>
+            <button id="unlink" hidden>Stop autosaving to file</button>
             <button id="clear" class="danger">Clear all scores</button>
             <button id="reset" class="danger">Reset everything</button>
           </div>

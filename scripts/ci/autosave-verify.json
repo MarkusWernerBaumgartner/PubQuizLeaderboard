@@ -1,0 +1,12 @@
+{
+  "size": [1280, 720],
+  "windows": ["leaderboard"],
+  "actions": [
+    { "wait": 1500 },
+    { "expect": "title", "equals": "Survives a crash" },
+    { "expect": "teams.length", "equals": 9 },
+    { "expect": "teams.8.name", "equals": "Autosave Heroes" },
+    { "expectLinked": true },
+    { "dispatch": { "type": "setTitle", "title": "Still autosaving after restart" } }
+  ]
+}

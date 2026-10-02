@@ -6,9 +6,21 @@
     "test": "node --test test/*.test.js",
     "start": "electron . --no-sandbox",
     "dist": "electron-builder --linux AppImage",
-    "privacy-check": "node scripts/privacy-check.js"
+    "privacy-check": "node scripts/privacy-check.js",
+    "media": "bash scripts/capture-media.sh",
+    "check-release": "node scripts/check-release.js",
+    "check-hygiene": "node scripts/check-hygiene.js",
+    "verify": "npm test && npm run check-release && npm run check-hygiene",
+    "version": "node scripts/check-release.js && git add CHANGELOG.md",
+    "e2e:autosave": "node scripts/ci/autosave-e2e.js"
   },
-  "keywords": [],
+  "keywords": [
+    "pub-quiz",
+    "leaderboard",
+    "electron",
+    "scoring",
+    "quiz"
+  ],
   "author": "Markus Baumgartner",
   "license": "MIT",
   "description": "Desktop scoring system and live leaderboard for pub quizzes",
@@ -37,12 +49,24 @@
         "--no-sandbox"
       ],
       "syncDesktopName": true,
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "artifactName": "PubQuizScoring-${version}.${ext}"
     },
     "directories": {
       "output": "dist"
     }
   },
   "desktopName": "pubquiz-scoring.desktop",
-  "private": true
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard.git"
+  },
+  "homepage": "https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard#readme",
+  "bugs": {
+    "url": "https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }

@@ -1,0 +1,37 @@
+name: Release
+
+# Push a tag like v1.2.0 (created by `npm version`) to publish a GitHub release with the AppImage.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tests
+        run: npm test
+      - name: Tag matches package.json and CHANGELOG has an entry
+        run: node scripts/check-release.js "${GITHUB_REF_NAME}"
+      - name: Build AppImage
+        run: npm run dist
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - name: Extract release notes from CHANGELOG
+        run: node scripts/check-release.js --notes "${GITHUB_REF_NAME#v}" > release-notes.md
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: release-notes.md
+          files: dist/*.AppImage
+          prerelease: ${{ contains(github.ref_name, '-') }}

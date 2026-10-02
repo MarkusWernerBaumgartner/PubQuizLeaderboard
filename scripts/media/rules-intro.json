@@ -1,0 +1,14 @@
+{
+  "size": [1280, 720],
+  "windows": ["leaderboard"],
+  "actions": [
+    { "wait": 1500 },
+    { "record": "rules-intro", "window": "leaderboard", "fps": 10, "width": 800 },
+    { "wait": 600 },
+    { "dispatch": { "type": "setRulesVisible", "visible": true } },
+    { "wait": 4800 },
+    { "dispatch": { "type": "setRulesVisible", "visible": false } },
+    { "wait": 2200 },
+    { "stop": true }
+  ]
+}

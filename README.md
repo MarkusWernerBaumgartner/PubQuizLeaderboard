@@ -1,68 +1,114 @@
-# Pub Quiz Scoring System
+<div align="center">
 
-A desktop app (Electron, vanilla JS) for running a pub quiz night: configure rounds and teams on your laptop, enter scores live, and show an animated leaderboard on the big screen. Fully brandable: name, colours, logo and icon are settings, not code.
+# 🍻 Pub Quiz Scoring System
 
-One app, three windows:
+**Run a pub quiz that looks like a TV game show.**<br>
+Score from your laptop, watch the leaderboard race, confetti and all, on the big screen.
 
-- **Launcher** – pick **Leaderboard** (big screen) or **Admin** (your laptop).
-- **Admin** – Setup (title, rounds), Rules, Questions, Teams, Scoring, Branding. Changes appear live on the Leaderboard.
-- **Leaderboard** – animated race board, per-round stacked bars, fun stats, rules overlay and a question panel.
+[![CI](https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/actions/workflows/ci.yml/badge.svg)](https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/github/package-json/v/MarkusWernerBaumgartner/PubQuizLeaderboard?label=version&color=4c54c9)](CHANGELOG.md)
+[![Licence: MIT](https://img.shields.io/badge/licence-MIT-4ecdc4.svg)](LICENSE)
+![Platform](https://img.shields.io/badge/platform-Linux-ffc83d)
+![Electron](https://img.shields.io/badge/built%20with-Electron-a78bfa)
 
-## Run
+<img src="docs/media/leaderboard.png" alt="The animated leaderboard" width="100%">
+
+</div>
+
+---
+
+## ✨ What it does
+
+### 🏁 A leaderboard that actually races
+Type a score on your laptop and the big screen reacts instantly: bars stretch, totals count up, teams swap places, and a 👑 moves to the new leader, with confetti when the lead changes.
+
+<img src="docs/media/score-update.gif" alt="Scores being entered and the leaderboard re-ordering with confetti" width="100%">
+
+### 🧠 Questions, like a slideshow
+Add questions with four options per round, then click through them from Admin: **board → question → question + options → board → …** The scoreboard slides aside to make room, and **Reveal answer** lights up the right one.
+
+<img src="docs/media/question-slideshow.gif" alt="Question slideshow with answer reveal" width="100%">
+
+### 📜 Rules that read themselves out
+Start the night with an animated rules screen (fully editable), then flip a switch to reveal the scoreboard.
+
+<img src="docs/media/rules-intro.gif" alt="Animated rules screen" width="100%">
+
+### 🎨 Make it yours in 30 seconds
+Your name, your logo, your colours, your window icon: all from the **Branding** tab, applied live to every screen. Save the result as a preset and swap identities for different events.
+
+<img src="docs/media/theming.gif" alt="The theme changing live" width="100%">
+
+### 🛟 Built so you can't lose the night
+Every score is saved the instant you type it, so closing the window or pulling the plug loses nothing. Optionally autosave to a file of your choice (a USB stick, a synced folder), with a live status chip so you can see it working.
+
+---
+
+## 🖥️ Three windows, one app
+
+| Launcher | Admin |
+| :---: | :---: |
+| <img src="docs/media/launcher.png" alt="Launcher" width="100%"> | <img src="docs/media/admin-scoring.png" alt="Admin scoring tab" width="100%"> |
+| Pick the big-screen **Leaderboard** or the **Admin** panel. The leaderboard can open fullscreen on the projector. | Set up rounds, rules, questions and teams, then enter scores. **Enter** jumps to the next team; **Undo** has your back. |
+
+<details>
+<summary><b>More screenshots</b></summary>
+<br>
+
+<img src="docs/media/leaderboard-question.png" alt="Leaderboard with a question and revealed answer" width="100%">
+<img src="docs/media/rules.png" alt="Rules screen" width="100%">
+<img src="docs/media/admin-questions.png" alt="Question editor" width="100%">
+<img src="docs/media/admin-branding.png" alt="Branding settings" width="100%">
+
+</details>
+
+## 🚀 Quick start
+
+**Download:** grab the latest AppImage from the [Releases](https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/releases) page, make it executable and run it:
 
 ```bash
-npm install
-npm start                 # development
-npm test                  # logic + branding tests
-npm run dist              # builds dist/*.AppImage
+chmod +x PubQuizScoring-*.AppImage
+./PubQuizScoring-*.AppImage
 ```
 
-In the launcher, choose which display the Leaderboard opens on (it defaults to your non-primary screen).
-**F11** toggles fullscreen in any window, **Esc** leaves it.
+**Or run from source** (Node.js 20+):
 
-## Running a quiz
+```bash
+git clone https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard.git
+cd PubQuizLeaderboard
+npm install
+npm start
+```
 
-1. Admin → **Setup**: title, number/names of rounds (and an optional max score per round).
-2. Admin → **Rules**: edit the list; the toggle (also in the bottom bar) shows/hides the rules overlay on the Leaderboard.
-3. Admin → **Questions** (optional): per round, question text + 4 options (A–D) and an optional correct answer.
-4. Admin → **Teams**: add names (or paste a list).
-5. Admin → **Scoring**: choose a round, type scores, **Enter** moves to the next team. **Undo** reverts the last change.
-6. Bottom bar: **Prev / Next** (or ← → / Space) steps `board → question → question + options → board → …`. **Reveal answer** highlights the correct option.
+### Try it in 60 seconds
+1. Launch the app → **Admin** → **Data → Load quiz…** → choose `examples/sample-quiz.json`.
+2. Launch the **Leaderboard** (drag it to your second screen and press **F11** for fullscreen).
+3. In Admin → **Scoring**, pick *Science & Nature* and type some scores. Watch the screen. 🎉
+4. Use **Next ▶** at the bottom to step through the questions.
 
-Try it with the sample data: Admin → **Data → Load quiz…** → `examples/sample-quiz.json`.
+## 📚 Documentation
 
-## Branding
-
-Admin → **Branding** (also linked from the launcher) controls the identity of the app:
-
-- app name and default quiz title (used for new/reset quizzes),
-- ten colours (backgrounds, lines/buttons, four accents, text colours) with contrast warnings,
-- crest/logo, optional wordmark and window icon (PNG/JPG/SVG/WebP, up to 5 MB),
-- **Import / Export preset** – a preset is a folder with `branding.json` and its image files, so you can keep several identities.
-
-Branding is stored separately from quiz data, so *Reset everything* never touches it. The repository ships only a neutral default (indigo palette, generic trophy badge).
-
-## Data & privacy
-
-Everything is stored on your machine, outside the repository, in `~/.config/pubquiz-scoring/`:
-
-| File | Contents |
+| | |
 | --- | --- |
-| `quiz.json` | the current quiz (teams, scores, rules, questions) |
-| `branding.json`, `branding-assets/` | your branding |
-| `backups/` | timestamped backup before any clear/reset/load |
+| 📖 [User guide](docs/user-guide.md) | Run a quiz night, step by step |
+| 🎨 [Branding](docs/branding.md) | Colours, logos, presets |
+| 🏗️ [Architecture](docs/architecture.md) | How it's built |
+| 🛠️ [Development](docs/development.md) | Tests, CI, regenerating these GIFs, releases |
+| 📝 [Changelog](CHANGELOG.md) | What changed in each version |
 
-A corrupt save is kept as `quiz.corrupt-*.json` and the app starts fresh. **Data → Export / Load** moves quizzes between machines.
+## 🧰 Under the hood
 
-If you fork or publish your own copy, keep personal presets and artwork in the gitignored `local/` folder. `npm run privacy-check` scans everything git would add for the terms listed in `local/privacy-terms.txt` (also gitignored).
+Electron with plain HTML/CSS/JS (no framework, no bundler). All game logic is a small pure module with a full unit-test suite, and CI runs the real app headlessly, including a test that kills it mid-quiz and checks that nothing was lost. Everything stays on your machine in `~/.config/pubquiz-scoring/`; there's no server, account or network access.
 
-## Layout
+```bash
+npm test          # unit tests
+npm run verify    # what CI runs: tests + version + hygiene checks
+npm run dist      # build the AppImage
+npm run media     # regenerate the screenshots & GIFs above
+```
 
-`main.js`, `preload.js` · `src/main/` (`store.js` quiz state + persistence, `branding.js` branding store) · `src/shared/` (pure, tested: `logic.js` reducer/selectors, `branding.js` model) · `src/renderer/` (launcher/admin/leaderboard pages, shared theme, fonts, default crest) · `examples/` · `test/`.
+Contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Licence
+## 📄 Licence
 
-Bundled fonts (Fredoka, Nunito) are licensed under the SIL Open Font License; their licence texts are in `src/renderer/assets/fonts/`.
-
-
-MIT – see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE). Bundled fonts (Fredoka, Nunito) are under the SIL Open Font Licence; texts in `src/renderer/assets/fonts/`.

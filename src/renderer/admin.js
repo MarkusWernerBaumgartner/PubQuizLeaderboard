@@ -344,12 +344,30 @@
     Q.openWindow('leaderboard', other ? { displayId: other.id } : {});
   };
   const closeMenu = () => document.querySelector('.menu').removeAttribute('open');
-  $('export').onclick = async () => { closeMenu(); const r = await Q.exportState(); if (r.ok) toast('Saved to ' + r.path, true); else if (!r.canceled) toast('Export failed: ' + r.error); };
+  const baseName = (p) => p.split(/[\\/]/).pop();
+  const clock = (t) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  function renderSaveChip(st) {
+    const chip = $('savechip'), un = $('unlink');
+    un.hidden = !st.path;
+    let text, cls = 'savechip', tip = '';
+    if (st.path && st.error) { text = `⚠ Not saved to ${baseName(st.path)}`; cls += ' warn'; tip = `${st.path}\n${st.error}`; }
+    else if (st.path) { text = `💾 ${baseName(st.path)}` + (st.savedAt ? ` · saved ${clock(st.savedAt)}` : ''); cls += ' linked'; tip = `Autosaving every change to:\n${st.path}`; }
+    else if (st.local.error) { text = '⚠ Cannot save on this computer'; cls += ' warn'; tip = st.local.error; }
+    else { text = '💾 Autosaved on this computer'; tip = 'Use Data → Save quiz as… to also autosave to a file of your choice'; }
+    chip.className = cls; chip.textContent = text; chip.title = tip;
+  }
+  Q.getSaveStatus().then(renderSaveChip);
+  Q.onSaveChange((st) => { renderSaveChip(st); if (st.path && st.error && !renderSaveChip.warned) { renderSaveChip.warned = true; toast('Could not save to ' + baseName(st.path) + ': ' + st.error); } if (!st.error) renderSaveChip.warned = false; });
+
+  $('saveas').onclick = async () => { closeMenu(); const r = await Q.saveAs(); if (r.ok) toast('Autosaving to ' + r.path, true); else if (!r.canceled) toast('Could not save: ' + r.error); };
+  $('export').onclick = async () => { closeMenu(); const r = await Q.exportState(); if (r.ok) toast('Copy saved to ' + r.path, true); else if (!r.canceled) toast('Export failed: ' + r.error); };
+  $('unlink').onclick = async () => { closeMenu(); await Q.unlinkSave(); toast('No longer autosaving to a file', true); };
   $('load').onclick = async () => {
     closeMenu();
-    if (!(await confirmDialog('Loading a file replaces the current quiz. A backup of the current state is saved first.', 'Choose file…'))) return;
+    if (!(await confirmDialog('Loading a file replaces the current quiz (a backup of it is saved first). Afterwards, changes autosave back to the file you load.', 'Choose file…'))) return;
     const r = await Q.loadState();
-    if (r.ok) toast('Quiz loaded', true); else if (!r.canceled) toast(r.error ? 'Could not load: ' + r.error : 'Nothing changed');
+    if (r.ok) toast(r.warning || (r.linked ? 'Quiz loaded – autosaving to that file' : 'Quiz loaded'), true);
+    else if (!r.canceled) toast(r.error ? 'Could not load: ' + r.error : 'Nothing changed');
   };
   $('clear').onclick = async () => { closeMenu(); if (await confirmDialog('Clear ALL scores? Teams, rounds and questions stay. A backup is saved first.', 'Clear scores')) { await dispatch({ type: 'clearScores' }); toast('Scores cleared', true); } };
   $('reset').onclick = async () => { closeMenu(); if (await confirmDialog('Reset EVERYTHING (teams, scores, rounds, rules, questions, title)? A backup is saved first.', 'Reset everything')) { await dispatch({ type: 'resetAll' }); toast('Reset to a fresh quiz', true); } };

@@ -1,0 +1,22 @@
+{
+  "size": [1280, 720],
+  "windows": ["leaderboard"],
+  "actions": [
+    { "wait": 1500 },
+    { "record": "score-update", "window": "leaderboard", "fps": 10, "width": 800 },
+    { "wait": 1200 },
+    { "dispatch": { "type": "setScore", "teamId": "@team:3", "roundId": "@round:3", "value": 2 } },
+    { "wait": 900 },
+    { "dispatch": { "type": "setScore", "teamId": "@team:0", "roundId": "@round:3", "value": 6 } },
+    { "wait": 900 },
+    { "dispatch": { "type": "setScore", "teamId": "@team:1", "roundId": "@round:3", "value": 4 } },
+    { "wait": 900 },
+    { "dispatch": { "type": "setScore", "teamId": "@team:4", "roundId": "@round:3", "value": 10 } },
+    { "wait": 3200 },
+    { "dispatch": { "type": "setScore", "teamId": "@team:2", "roundId": "@round:3", "value": 5 } },
+    { "wait": 800 },
+    { "dispatch": { "type": "setScore", "teamId": "@team:5", "roundId": "@round:3", "value": 6 } },
+    { "wait": 1800 },
+    { "stop": true }
+  ]
+}

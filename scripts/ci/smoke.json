@@ -1,0 +1,17 @@
+{
+  "size": [1280, 720],
+  "windows": ["launcher", "leaderboard", "admin"],
+  "actions": [
+    { "wait": 2500 },
+    { "shot": "launcher", "window": "launcher" },
+    { "shot": "leaderboard", "window": "leaderboard" },
+    { "shot": "admin", "window": "admin" },
+    { "dispatch": { "type": "setScore", "teamId": "@team:0", "roundId": "@round:3", "value": 7 } },
+    { "dispatch": { "type": "presentGoto", "step": 2 } },
+    { "dispatch": { "type": "setRulesVisible", "visible": true } },
+    { "wait": 3500 },
+    { "shot": "leaderboard-after", "window": "leaderboard" },
+    { "branding": { "appName": "Smoke Test" } },
+    { "wait": 800 }
+  ]
+}

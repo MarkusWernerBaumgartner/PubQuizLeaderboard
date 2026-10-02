@@ -1,13 +1,13 @@
 .app { position: relative; z-index: 1; height: 100%; display: grid; grid-template-rows: auto 1fr auto; }
-header { display: flex; align-items: center; gap: 1.2rem; padding: .7rem 1.2rem; background: color-mix(in srgb, var(--bg-deep) 85%, transparent); border-bottom: 3px solid var(--line); flex-wrap: wrap; }
+header { display: flex; align-items: center; gap: .8rem; padding: .7rem 1rem; background: color-mix(in srgb, var(--bg-deep) 85%, transparent); border-bottom: 3px solid var(--line); flex-wrap: wrap; }
 header .crest { height: 48px; }
 .head-title { display: flex; align-items: center; gap: .8rem; min-width: 0; }
-.head-title h1 { font-size: 1.25rem; color: var(--accent-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 32ch; }
+.head-title h1 { font-size: 1.25rem; color: var(--accent-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 18ch; }
 .live { font: 800 .7rem var(--body); letter-spacing: .12em; background: var(--accent-2); color: #2b0a0a; padding: .2em .6em; border-radius: 999px; display: inline-flex; gap: .35em; align-items: center; }
 .live i { width: .5em; height: .5em; border-radius: 50%; background: #2b0a0a; animation: blink 1.2s infinite; }
 @keyframes blink { 50% { opacity: .2; } }
-nav { display: flex; gap: .4rem; flex: 1; }
-nav button { font: 600 1rem var(--display); border: 0; background: transparent; color: var(--muted); padding: .5em 1em; border-radius: 999px; cursor: pointer; }
+nav { display: flex; gap: .2rem; flex: 1 1 auto; min-width: 0; }
+nav button { white-space: nowrap; font: 600 .95rem var(--display); border: 0; background: transparent; color: var(--muted); padding: .5em .8em; border-radius: 999px; cursor: pointer; }
 nav button:hover { color: var(--text); background: rgba(255,255,255,.08); }
 nav button.on { background: var(--accent-1); color: var(--bg); }
 .tools { display: flex; gap: .5rem; align-items: center; }
@@ -85,3 +85,7 @@ footer .dots i.on { background: var(--accent-1); transform: scale(1.5); }
 .colour-row code { color: var(--muted); font-size: .85rem; user-select: text; }
 .swatch { width: 3rem; height: 2.4rem; padding: 0; border: 2px solid var(--line); border-radius: 10px; background: none; cursor: pointer; }
 .warn { background: color-mix(in srgb, var(--accent-2) 20%, transparent); border: 2px solid var(--accent-2); border-radius: 12px; padding: .5rem .8rem; margin: 0 0 .8rem; font-weight: 700; }
+
+.savechip { font: 700 .8rem var(--body); color: var(--muted); max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: .3em .8em; border-radius: 999px; border: 2px solid var(--line); }
+.savechip.linked { color: var(--accent-3); border-color: var(--accent-3); }
+.savechip.warn { color: #2b0a0a; background: var(--accent-2); border-color: var(--accent-2); }

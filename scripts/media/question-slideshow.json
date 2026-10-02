@@ -1,0 +1,18 @@
+{
+  "size": [1280, 720],
+  "windows": ["leaderboard"],
+  "actions": [
+    { "wait": 1500 },
+    { "record": "question-slideshow", "window": "leaderboard", "fps": 10, "width": 800 },
+    { "wait": 1200 },
+    { "dispatch": { "type": "presentNext" } },
+    { "wait": 2600 },
+    { "dispatch": { "type": "presentNext" } },
+    { "wait": 2600 },
+    { "dispatch": { "type": "presentReveal" } },
+    { "wait": 2200 },
+    { "dispatch": { "type": "presentNext" } },
+    { "wait": 2200 },
+    { "stop": true }
+  ]
+}

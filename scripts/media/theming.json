@@ -1,0 +1,18 @@
+{
+  "size": [1280, 720],
+  "windows": ["leaderboard"],
+  "actions": [
+    { "wait": 1500 },
+    { "record": "theming", "window": "leaderboard", "fps": 10, "width": 800 },
+    { "wait": 1400 },
+    { "branding": { "colours": { "bg": "#0f3d2e", "bgDeep": "#06201a", "bgMid": "#1c6b50", "line": "#2fa37a" } } },
+    { "wait": 1800 },
+    { "branding": { "colours": { "bg": "#4a1530", "bgDeep": "#250a18", "bgMid": "#8a2c5a", "line": "#d6568f", "accent1": "#ffe08a" } } },
+    { "wait": 1800 },
+    { "branding": { "colours": { "bg": "#0d2b45", "bgDeep": "#061622", "bgMid": "#16608f", "line": "#2b9bd6", "accent1": "#ffc83d" } } },
+    { "wait": 1800 },
+    { "branding": "reset" },
+    { "wait": 1600 },
+    { "stop": true }
+  ]
+}

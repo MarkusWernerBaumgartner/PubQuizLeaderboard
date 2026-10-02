@@ -74,6 +74,7 @@ app.whenReady().then(() => {
   branding = new BrandingStore(app.getPath('userData'));
   store = new Store(app.getPath('userData'), () => branding.getDefaultTitle());
   store.on('change', broadcast);
+  store.on('save', (status) => { for (const w of BrowserWindow.getAllWindows()) if (!w.isDestroyed()) w.webContents.send('save:changed', status); });
   branding.on('change', (payload) => {
     for (const w of BrowserWindow.getAllWindows()) {
       if (w.isDestroyed()) continue;
@@ -120,59 +121,44 @@ app.whenReady().then(() => {
     if (r.canceled || !r.filePaths[0]) return { ok: false, canceled: true };
     try { return { ok: true, path: branding.exportPreset(r.filePaths[0]) }; } catch (err) { return { ok: false, error: err.message }; }
   });
+  ipcMain.handle('app:info', () => ({ version: app.getVersion() }));
   ipcMain.handle('app:quit', () => app.quit());
 
-  ipcMain.handle('data:export', async (e) => {
-    const r = await dialog.showSaveDialog(parentFor(e), {
-      defaultPath: `pubquiz-${new Date().toISOString().slice(0, 10)}.json`,
-      filters: [{ name: 'Quiz JSON', extensions: ['json'] }],
-    });
-    if (r.canceled || !r.filePath) return { ok: false, canceled: true };
-    try { fs.writeFileSync(r.filePath, JSON.stringify(store.getState(), null, 2)); return { ok: true, path: r.filePath }; }
-    catch (err) { return { ok: false, error: err.message }; }
-  });
+  // ---- saving & loading ----
+  // Files inside the app's own folder (e.g. the bundled sample) are loaded but never auto-written.
+  const isInsideApp = (file) => { const rel = path.relative(__dirname, file); return !rel.startsWith('..') && !path.isAbsolute(rel); };
+  const jsonFilter = [{ name: 'Quiz JSON', extensions: ['json'] }];
+  const suggestName = () => path.join(app.getPath('documents'), `pubquiz-${new Date().toISOString().slice(0, 10)}.json`);
 
-  ipcMain.handle('data:load', async (e) => {
-    const r = await dialog.showOpenDialog(parentFor(e), { properties: ['openFile'], filters: [{ name: 'Quiz JSON', extensions: ['json'] }] });
-    if (r.canceled || !r.filePaths[0]) return { ok: false, canceled: true };
-    try {
-      const parsed = L.normalizeState(JSON.parse(fs.readFileSync(r.filePaths[0], 'utf8')));
-      return store.dispatch({ type: 'load', state: parsed });
-    } catch (err) { return { ok: false, error: err.message }; }
+  ipcMain.handle('save:get', () => store.saveStatus());
+  ipcMain.handle('data:saveAs', async (e) => {
+    const r = await dialog.showSaveDialog(parentFor(e), { title: 'Save quiz as… (changes will autosave to this file)', defaultPath: store.saveStatus().path || suggestName(), filters: jsonFilter });
+    if (r.canceled || !r.filePath) return { ok: false, canceled: true };
+    const file = r.filePath.toLowerCase().endsWith('.json') ? r.filePath : r.filePath + '.json';
+    const res = store.linkTo(file);
+    return res.ok ? { ok: true, path: file } : res;
   });
+  ipcMain.handle('data:export', async (e) => {
+    const r = await dialog.showSaveDialog(parentFor(e), { title: 'Export a copy', defaultPath: suggestName(), filters: jsonFilter });
+    if (r.canceled || !r.filePath) return { ok: false, canceled: true };
+    const res = store.exportTo(r.filePath);
+    return res.ok ? { ok: true, path: r.filePath } : res;
+  });
+  ipcMain.handle('data:load', async (e) => {
+    const r = await dialog.showOpenDialog(parentFor(e), { properties: ['openFile'], filters: jsonFilter });
+    if (r.canceled || !r.filePaths[0]) return { ok: false, canceled: true };
+    return store.loadFrom(r.filePaths[0], { link: !isInsideApp(r.filePaths[0]) });
+  });
+  ipcMain.handle('data:unlink', () => { store.unlink(); return { ok: true }; });
 
   createWindow('launcher');
-  if (process.env.PUBQUIZ_DEV_SHOTS) devShots(process.env.PUBQUIZ_DEV_SHOTS);
+  if (process.env.PUBQUIZ_DEV_SCENARIO) {
+    // Scripted run for docs media and CI smoke tests (see scripts/media, scripts/ci).
+    require('./src/main/dev-capture').run(process.env.PUBQUIZ_DEV_SCENARIO, process.env.PUBQUIZ_DEV_OUT, { app, windows, createWindow, store, branding });
+  }
   app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow('launcher'); });
 });
 
 app.on('second-instance', () => { const w = windows.launcher || Object.values(windows)[0]; if (w) { w.show(); w.focus(); } });
 app.on('before-quit', () => { if (store) { try { store.flush(); } catch (e) { /* ignore */ } } });
 app.on('window-all-closed', () => app.quit());
-
-// Dev helper: PUBQUIZ_DEV_SHOTS=<dir>[:kinds] opens windows, saves screenshots, then quits.
-// Optional PUBQUIZ_DEV_STEPS="act1;act2" runs JSON dispatch actions (between shots) to capture states.
-function devShots(spec) {
-  const [dir, kinds = 'launcher,admin,leaderboard'] = spec.split(':');
-  fs.mkdirSync(dir, { recursive: true });
-  const steps = (process.env.PUBQUIZ_DEV_STEPS || '').split(';').filter(Boolean).map((x) => JSON.parse(x));
-  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  (async () => {
-    for (const k of kinds.split(',')) {
-      const w = createWindow(k, k === 'admin' && process.env.PUBQUIZ_DEV_SECTION ? { section: process.env.PUBQUIZ_DEV_SECTION } : {});
-      w.setBounds({ x: 0, y: 0, width: 1920, height: 1080 });
-      w.webContents.on('console-message', (_e, _l, msg) => console.log(`[${k}]`, msg));
-    }
-    await wait(2500);
-    const shot = async (tag) => {
-      for (const [k, w] of Object.entries(windows)) {
-        const img = await w.webContents.capturePage();
-        fs.writeFileSync(path.join(dir, `${k}-${tag}.png`), img.toPNG());
-      }
-    };
-    await shot('0');
-    let i = 1;
-    for (const a of steps) { if (a.branding) branding.set(a.branding); else store.dispatch(a); await wait(Number(process.env.PUBQUIZ_DEV_WAIT || 2200)); await shot(String(i++)); }
-    app.quit();
-  })();
-}

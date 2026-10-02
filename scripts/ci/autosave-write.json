@@ -1,0 +1,12 @@
+{
+  "size": [1280, 720],
+  "windows": ["leaderboard"],
+  "actions": [
+    { "wait": 1500 },
+    { "linkTo": "linked.json" },
+    { "dispatch": { "type": "addTeam", "name": "Autosave Heroes" } },
+    { "dispatch": { "type": "setScore", "teamId": "@team:8", "roundId": "@round:3", "value": 9 } },
+    { "dispatch": { "type": "setTitle", "title": "Survives a crash" } },
+    { "crash": true }
+  ]
+}

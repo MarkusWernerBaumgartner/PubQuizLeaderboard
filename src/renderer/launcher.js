@@ -17,6 +17,7 @@
     if (other) sel.value = other.id;
   }
 
+  window.quiz.appInfo().then((i) => { document.getElementById('version').textContent = 'v' + i.version; });
   document.getElementById('open-board').onclick = () =>
     window.quiz.openWindow('leaderboard', displays.length > 1 ? { displayId: Number(sel.value) } : {});
   document.getElementById('open-admin').onclick = () => window.quiz.openWindow('admin');
