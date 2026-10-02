@@ -154,7 +154,7 @@
       requestAnimationFrame(() => panel.classList.toggle('show-opts', showOpts));
       const reveal = showOpts && state.presentation.revealAnswer;
       panel.classList.toggle('reveal', reveal);
-      if (reveal && !lastReveal) window.Confetti.burst({ x: 0.83, y: 0.55, count: 70, spread: Math.PI * 2, power: .8 });
+      if (reveal && !lastReveal) playReveal();
       lastReveal = reveal;
     } else {
       lastStepKey = null; lastReveal = false;
@@ -181,6 +181,36 @@
     const b = $('banner'); b.textContent = text; b.classList.remove('on'); void b.offsetWidth; b.classList.add('on');
     clearTimeout(bannerTimer);
   }
+  // Each play* returns true when it showed anything, so a switched-off celebration doesn't suppress the next one.
+  function playLeadChange(name) {
+    let shown = false;
+    if (Effects.on('celebrate.leadChange.confetti')) { window.Confetti.celebrate(); shown = true; }
+    if (Effects.on('celebrate.leadChange.banner')) { banner(`👑 ${name} take the lead!`); shown = true; }
+    return shown;
+  }
+  function playRoundComplete(roundName) {
+    let shown = false;
+    if (Effects.on('celebrate.roundComplete.confetti')) { window.Confetti.burst({ x: .5, y: .3, count: 160 }); shown = true; }
+    if (Effects.on('celebrate.roundComplete.banner')) { banner(`✅ ${roundName} complete!`); shown = true; }
+    if (Effects.on('celebrate.roundComplete.chipPop')) { const ch = $('after'); ch.classList.remove('pop'); void ch.offsetWidth; ch.classList.add('pop'); shown = true; }
+    return shown;
+  }
+  function playReveal() {
+    if (!Effects.on('celebrate.reveal.confetti')) return false;
+    window.Confetti.burst({ x: 0.83, y: 0.55, count: 70, spread: Math.PI * 2, power: .8 });
+    return true;
+  }
+  function scorePulse(r, diff) {
+    if (Effects.on('scores.pulse')) {
+      r.el.classList.remove('pulse'); void r.el.offsetWidth; r.el.classList.add('pulse');
+      setTimeout(() => r.el.classList.remove('pulse'), 1300);
+    }
+    if (Effects.on('scores.plusChip')) {
+      const chip = el('div', 'chipplus', (diff > 0 ? '+' : '') + A.fmt(diff));
+      r.el.append(chip); setTimeout(() => chip.remove(), 1900);
+    }
+  }
+
   function detectEvents(a, b) {
     const sa = L.standings(a), sb = L.standings(b);
     const before = new Map(sa.map((e) => [e.team.id, e.total]));
@@ -189,20 +219,29 @@
       const diff = e.total - before.get(e.team.id);
       const r = rowEls.get(e.team.id);
       if (!diff || !r) continue;
-      r.el.classList.remove('pulse'); void r.el.offsetWidth; r.el.classList.add('pulse');
-      setTimeout(() => r.el.classList.remove('pulse'), 1300);
-      const chip = el('div', 'chipplus', (diff > 0 ? '+' : '') + A.fmt(diff));
-      r.el.append(chip); setTimeout(() => chip.remove(), 1900);
+      scorePulse(r, diff);
     }
     const leadA = sa.length && sa[0].total > 0 && sa[0].rank === 1 && (sa.length < 2 || sa[1].rank !== 1) ? sa[0].team.id : null;
     const leadB = sb.length && sb[0].total > 0 && sb[0].rank === 1 && (sb.length < 2 || sb[1].rank !== 1) ? sb[0].team : null;
-    if (leadA && leadB && leadB.id !== leadA) { window.Confetti.celebrate(); banner(`👑 ${leadB.name} take the lead!`); return; }
+    if (leadA && leadB && leadB.id !== leadA && playLeadChange(leadB.name)) return;
     const done = (s, r) => s.teams.length > 0 && s.teams.every((t) => t.scores[r.id] !== undefined);
     for (const r of b.rounds) {
       const old = a.rounds.find((x) => x.id === r.id);
-      if (old && !done(a, old) && done(b, r)) { window.Confetti.burst({ x: .5, y: .3, count: 160 }); banner(`✅ ${r.name} complete!`); const ch = $('after'); ch.classList.remove('pop'); void ch.offsetWidth; ch.classList.add('pop'); break; }
+      if (old && !done(a, old) && done(b, r)) { playRoundComplete(r.name); break; }
     }
   }
+
+  // Admin's "Preview" buttons: play a celebration with the current settings.
+  Q.onEffectPreview((kind) => {
+    if (!state) return;
+    if (kind === 'leadChange') playLeadChange((L.standings(state)[0] || { team: { name: 'Your team' } }).team.name);
+    else if (kind === 'roundComplete') { const sc = L.scoredRounds(state); playRoundComplete(sc.length ? sc[sc.length - 1].name : state.rounds[0].name); }
+    else if (kind === 'reveal') {
+      playReveal();
+      const panel = $('qpanel');
+      if (compact()) { panel.classList.add('show-opts', 'reveal'); setTimeout(() => { if (!state.presentation.revealAnswer) panel.classList.remove('reveal'); }, 3000); }
+    }
+  });
 
   // ---- main render ------------------------------------------------------------------
   function render() {

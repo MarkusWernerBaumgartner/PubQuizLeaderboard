@@ -1,18 +1,24 @@
 {
   "name": "pubquiz-scoring",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "main.js",
   "scripts": {
     "test": "node --test test/*.test.js",
-    "start": "electron . --no-sandbox",
-    "dist": "electron-builder --linux AppImage",
+    "start": "node scripts/start.js",
+    "dist": "electron-builder --publish never",
     "privacy-check": "node scripts/privacy-check.js",
     "media": "bash scripts/capture-media.sh",
     "check-release": "node scripts/check-release.js",
     "check-hygiene": "node scripts/check-hygiene.js",
-    "verify": "npm test && npm run check-release && npm run check-hygiene",
+    "verify": "npm test && npm run check-syntax && npm run check-release && npm run check-hygiene",
     "version": "node scripts/check-release.js && git add CHANGELOG.md",
-    "e2e:autosave": "node scripts/ci/autosave-e2e.js"
+    "e2e:autosave": "node scripts/ci/autosave-e2e.js",
+    "dist:linux": "electron-builder --linux --publish never",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:local": "node scripts/build-local.js",
+    "check-syntax": "node scripts/check-syntax.js",
+    "ci:smoke": "node scripts/ci/run-smoke.js"
   },
   "keywords": [
     "pub-quiz",
@@ -50,10 +56,57 @@
       ],
       "syncDesktopName": true,
       "icon": "build/icon.png",
-      "artifactName": "PubQuizScoring-${version}.${ext}"
+      "artifactName": "PubQuizScoring-${version}-linux.${ext}"
     },
     "directories": {
       "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "artifactName": "PubQuizScoring-Setup-${version}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "portable": {
+      "artifactName": "PubQuizScoring-${version}-portable.${ext}"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.entertainment",
+      "icon": "build/icon.png",
+      "artifactName": "PubQuizScoring-${version}-mac-${arch}.${ext}"
     }
   },
   "desktopName": "pubquiz-scoring.desktop",

@@ -47,6 +47,10 @@ Turn on **Rules** (header of the Rules tab or the bottom bar) before you begin. 
 
 ![Rules intro](media/rules-intro.gif)
 
+## Animations and celebrations
+
+Confetti, banners, pulses, sliding bars and the other motion are all optional. Open **Admin → ✨ Effects**, pick a preset (Party, Calm, Minimal, Off) or switch individual effects, and use the Preview buttons to try a celebration on the Leaderboard. See [Animations, celebrations & popups](effects.md) for the full list.
+
 ## What the Leaderboard shows
 
 - **Race board** – teams ordered by total. Tied teams share a rank (1, 1, 3…). The bar is split into one coloured segment per round. Arrows show places gained or lost since the previous scored round. 👑 marks the leader and 🥄 the wooden spoon (last place, when unique).
@@ -55,7 +59,17 @@ Turn on **Rules** (header of the Rules tab or the bottom bar) before you begin. 
 
 ## Saving and loading
 
-**You never have to press save.** Every change is written to disk the moment you make it, atomically (a crash can't leave a half-written file), to the app's working copy at `~/.config/pubquiz-scoring/quiz.json`. Close the window, kill the app or lose power: reopen it and the quiz is exactly as you left it.
+**You never have to press save.** Every change is written to disk the moment you make it, atomically (a crash can't leave a half-written file), to the app's working copy, `quiz.json` in the app's data folder (below). Close the window, kill the app or lose power: reopen it and the quiz is exactly as you left it.
+
+The **data folder** is:
+
+| System | Location |
+| --- | --- |
+| Linux | `~/.config/pubquiz-scoring/` |
+| macOS | `~/Library/Application Support/pubquiz-scoring/` |
+| Windows | `%APPDATA%\pubquiz-scoring\` |
+
+It holds `quiz.json`, `branding.json` and `branding-assets/`, `settings.json` (your [effects](effects.md) preferences), `session.json` and `backups/`.
 
 ### Autosaving to a file of your choice
 For a file you can keep, back up or move to another machine, use **Data → Save quiz as…**. The quiz is written to the file you choose, and from then on **every change is autosaved to it too**. The same happens when you **Load** a file: afterwards your changes flow back into that file.
@@ -79,7 +93,7 @@ The chip at the top of Admin shows what is happening:
 | Clear all scores | Remove scores, keep teams, rounds, rules and questions |
 | Reset everything | Back to a fresh quiz (your [branding](branding.md) is kept) |
 
-Clearing, resetting and loading first write a timestamped backup to `~/.config/pubquiz-scoring/backups/`. A file that isn't a valid quiz is rejected with a message and nothing changes. If the working copy is ever corrupt, the app keeps it as `quiz.corrupt-*.json` and starts fresh.
+Clearing, resetting and loading first write a timestamped backup to the `backups/` folder in the data folder. A file that isn't a valid quiz is rejected with a message and nothing changes. If the working copy is ever corrupt, the app keeps it as `quiz.corrupt-*.json` and starts fresh.
 
 To try things out, load [`examples/sample-quiz.json`](../examples/sample-quiz.json): eight teams, five rounds (three already scored) and a handful of questions. Files inside the app's own folder, like this sample, are loaded but never written to; use **Save quiz as…** to make your own copy.
 

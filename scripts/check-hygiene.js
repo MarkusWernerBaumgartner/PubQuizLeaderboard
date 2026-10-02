@@ -11,7 +11,8 @@ const FORBIDDEN = [
   [/(^|\/)branding\.json$/, 'saved branding config'],
   [/(^|\/)quiz[^/]*\.json$/, 'saved quiz data (only examples/sample-quiz.json is allowed)'],
   [/^\.remember\//, 'tooling state'],
-  [/\.AppImage$/i, 'build output'],
+  [/\.(AppImage|dmg|exe|msi)$/i, 'build output'],
+  [/^dist(-local)?\//, 'build output'],
 ];
 const ALLOWED = new Set(['examples/sample-quiz.json']);
 

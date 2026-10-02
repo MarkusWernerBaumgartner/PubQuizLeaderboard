@@ -5,7 +5,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-02
+
 ### Added
+- **Effects** tab: every animation, celebration and popup (confetti, banners, pulses, "+N" points, count-up, sliding re-order, rules/question/stat animations, ambient motion, admin motion and success toasts) can be switched off individually, with Party/Calm/Minimal/Off presets, a confetti-amount control, preview buttons, and respect for the system "reduce motion" setting. Errors and confirmation dialogs always stay. See `docs/effects.md`.
+- Windows (installer + portable) and macOS (Intel + Apple Silicon `.dmg`/`.zip`) builds, built and tested in CI alongside Linux; releases now publish all of them.
+- `npm run dist:local` builds with the icon from a local, gitignored preset; public builds keep the neutral icon.
+- `npm run check-syntax`, `npm run ci:smoke`, and end-to-end scenarios proving the effect switches work.
 - **Save quiz as…**: choose a file and every change is autosaved to it, with a status chip in Admin (saved time, or a warning if the file can't be written). The link survives restarts; **Stop autosaving to file** removes it.
 - Store tests for saving, loading, linking, corruption and failure handling, and an end-to-end test that SIGKILLs the app and verifies nothing is lost.
 - GitHub Actions: CI (tests, hygiene and version checks, headless Electron smoke test, AppImage build) and a tag-triggered release workflow.
@@ -19,6 +25,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **Load quiz…** now keeps autosaving back to the loaded file. Export is now **Export a copy…**.
 
 ### Fixed
+- CI build job failed trying to publish (electron-builder's implicit publish-on-CI); builds now use `--publish never`.
+- `npm start` no longer disables the Chromium sandbox on Windows and macOS (Linux only).
+- macOS gets a minimal application menu so copy/paste/quit shortcuts work.
 - A failed write (full disk, unplugged drive) no longer risks crashing the app; the error is shown and play continues.
 
 ### Removed
@@ -35,5 +44,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Configurable branding: name, default title, colours, crest, wordmark and window icon, with preset import/export.
 - Sample quiz in `examples/sample-quiz.json`.
 
-[Unreleased]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/releases/tag/v1.0.0

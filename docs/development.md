@@ -13,22 +13,25 @@ npm start
 
 | Script | What it does |
 | --- | --- |
-| `npm start` | Run the app (`--no-sandbox`, see [security notes](architecture.md#security-notes)) |
+| `npm start` | Run the app (adds `--no-sandbox` on Linux only; see [security notes](architecture.md#security-notes)) |
 | `npm test` | Unit tests (`node --test`) |
+| `npm run ci:smoke` | The CI end-to-end suite: smoke scenario, effects on/off, autosave kill/restart (needs a display; `xvfb-run -a` on headless Linux) |
 | `npm run e2e:autosave` | Starts the real app, links a save file, SIGKILLs it, restarts and checks nothing was lost (needs a display) |
-| `npm run verify` | Tests + version/changelog check + repository hygiene check |
+| `npm run check-syntax` | `node --check` on every JavaScript file |
+| `npm run verify` | Tests + syntax + version/changelog + repository hygiene checks |
 | `npm run check-release` | `package.json` version is semver and has a non-empty CHANGELOG entry |
 | `npm run check-hygiene` | No brand artwork, personal presets or saved data would be committed |
 | `npm run privacy-check` | Scan files git would add for terms in your own gitignored `local/privacy-terms.txt` |
-| `npm run dist` | Build `dist/PubQuizScoring-<version>.AppImage` |
+| `npm run dist` | Build installers for the **current** OS into `dist/` (never publishes). `dist:linux`, `dist:win` and `dist:mac` select a target explicitly |
+| `npm run dist:local` | Same, using the app icon from a local gitignored preset (default `local/preset/icon.png`) → `dist-local/`. Pass another preset folder, or `-- --win` / `--mac`. Public/CI builds keep the neutral icon |
 | `npm run media` | Regenerate the screenshots and GIFs in `docs/media` |
 
 ## Project layout
 
 ```
 main.js  preload.js                 Electron main process and bridge
-src/main/                           store.js, branding.js, dev-capture.js
-src/shared/                         logic.js, branding.js (pure, tested)
+src/main/                           store.js, branding.js, settings.js, fsutil.js, dev-capture.js
+src/shared/                         logic.js, branding.js, effects.js (pure, tested)
 src/renderer/                       launcher/admin/leaderboard pages, common/, assets/
 test/                               unit tests
 examples/sample-quiz.json           demo quiz used by docs and CI
@@ -67,9 +70,9 @@ runs the scenarios in `scripts/media/` against `examples/sample-quiz.json` in a 
 
 `.github/workflows/ci.yml` runs on every push to `main` and every pull request:
 
-1. **Tests & checks** – unit tests, `node --check` on every JavaScript file, version/changelog consistency, repository hygiene, and that the sample quiz loads.
-2. **Headless app smoke & autosave tests** – starts the real app under Xvfb with `scripts/ci/smoke.json`, takes screenshots of all three windows, and fails on any console error or blank screenshot (`scripts/ci/check-smoke.js`; screenshots are uploaded as an artifact). Then `scripts/ci/autosave-e2e.js` kills the app with SIGKILL mid-session and checks that a restart loses nothing.
-3. **Build AppImage** – proves the package builds; the AppImage is uploaded as an artifact.
+1. **Tests & checks** – on Linux, Windows and macOS: unit tests, syntax check, version/changelog consistency, repository hygiene, and that the sample quiz loads.
+2. **App smoke, effects & autosave** (`npm run ci:smoke`) – starts the real app (under Xvfb on Linux) and runs `scripts/ci/smoke.json` (all windows open, no console errors, non-blank screenshots), `effects-on.json` / `effects-off.json` (the animation switches really work), and `autosave-e2e.js` (SIGKILL mid-session, restart, nothing lost). The Windows and macOS runs are marked `continue-on-error` until they have proven stable; Linux is required. Screenshots are uploaded as artifacts.
+3. **Build** – builds the installers on each OS (AppImage; Windows installer + portable `.exe`; macOS `.dmg` + `.zip` for Intel and Apple Silicon) and uploads them as artifacts. Builds never publish.
 
 Dependabot proposes weekly updates for npm packages and GitHub Actions.
 
@@ -89,7 +92,14 @@ To cut a release:
 2. Run `npm version <patch|minor|major>`. Its `version` hook runs `check-release` (so a missing changelog entry stops the release), stages `CHANGELOG.md`, and npm creates the commit and the `vX.Y.Z` tag.
 3. `git push --follow-tags`.
 
-Pushing the tag triggers `.github/workflows/release.yml`, which re-runs the tests, verifies the tag matches `package.json` and the changelog, builds the AppImage, and publishes a GitHub release whose notes are the changelog section. Tags containing a `-` (e.g. `v1.3.0-rc.1`) are published as pre-releases.
+Pushing the tag triggers `.github/workflows/release.yml`, which builds on Linux, Windows and macOS (after re-running the tests and verifying the tag matches `package.json` and the changelog), then publishes a single GitHub release containing every installer, with the changelog section as the notes. Tags containing a `-` (e.g. `v1.3.0-rc.1`) are published as pre-releases.
+
+## Platform notes
+
+- **Data folders** differ per OS (see the [user guide](user-guide.md#saving-and-loading)); the code uses `app.getPath('userData')`, never a hard-coded path.
+- **Unsigned builds**: Windows SmartScreen and macOS Gatekeeper warn on first launch. Signing needs a code-signing certificate (Windows) and an Apple Developer ID plus notarisation (macOS); electron-builder supports both through environment variables if you add them later.
+- **macOS fullscreen** uses `setSimpleFullScreen` so the leaderboard stays on the display you chose; verify on a real Mac with a second screen after changes in this area.
+- **Windows e2e**: a killed Windows process reports an exit status instead of a signal; `autosave-e2e.js` accounts for this.
 
 ## Keeping personal data out of git
 

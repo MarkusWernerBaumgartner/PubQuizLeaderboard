@@ -1,0 +1,16 @@
+{
+  "size": [1280, 720],
+  "windows": ["leaderboard"],
+  "actions": [
+    { "wait": 2000 },
+    { "settings": { "preset": "party" } },
+    { "wait": 500 },
+    { "eval": "document.documentElement.className.includes('fx-off-')", "window": "leaderboard", "equals": false },
+    { "eval": "getComputedStyle(document.querySelector('.ambient')).display !== 'none'", "window": "leaderboard", "equals": true },
+    { "dispatch": { "type": "setScore", "teamId": "@team:4", "roundId": "@round:3", "value": 10 } },
+    { "wait": 400 },
+    { "eval": "Confetti.active() > 0", "window": "leaderboard", "equals": true },
+    { "eval": "document.getElementById('banner').classList.contains('on')", "window": "leaderboard", "equals": true },
+    { "eval": "document.querySelectorAll('.chipplus').length > 0", "window": "leaderboard", "equals": true }
+  ]
+}

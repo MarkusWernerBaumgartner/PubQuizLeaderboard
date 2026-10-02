@@ -96,3 +96,20 @@ header h1 { flex: 1; font-size: 3rem; color: var(--accent-1); text-shadow: 0 .2r
 .banner.on { animation: banner 3.4s cubic-bezier(.2,1.4,.4,1) forwards; }
 @keyframes banner { 0% { opacity: 0; transform: translate(-50%, -3rem) scale(.6); } 12% { opacity: 1; transform: translate(-50%, 0) scale(1.05); } 20% { transform: translate(-50%, 0) scale(1); } 85% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, 1rem) scale(.95); } }
 @media (prefers-reduced-motion: reduce) { * { animation-duration: .01s !important; transition-duration: .01s !important; } }
+
+/* ---- Effects switched off in Settings ---- */
+html.fx-off-celebrate-round-complete-chip-pop .chip.pop { animation: none; }
+html.fx-off-celebrate-reveal-highlight .qpanel.reveal .opt.correct { animation: none; }
+html.fx-off-scores-pulse .row.pulse .total,
+html.fx-off-scores-pulse .row.pulse .track { animation: none; }
+html.fx-off-scores-reorder .row { transition: none; }
+html.fx-off-scores-bar-grow .bar,
+html.fx-off-scores-bar-grow .seg { transition: none; }
+html.fx-off-screens-rules-stagger #rules-list li { animation: none !important; opacity: 1 !important; transform: none !important; }
+html.fx-off-screens-question-slide .board,
+html.fx-off-screens-question-slide .qpanel,
+html.fx-off-screens-question-slide .opt { transition: none !important; }
+html.fx-off-screens-question-slide .qtext { animation: none !important; }
+html.fx-off-screens-stats-animate .scard { animation: none !important; }
+html.fx-off-ambient-crown-bob .who .crown { animation: none; }
+html.fx-off-ambient-empty-bob .empty span { animation: none; }

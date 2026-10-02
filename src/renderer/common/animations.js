@@ -6,7 +6,7 @@
     const from = Number(el.dataset.v ?? 0);
     el.dataset.v = String(to);
     if (running.has(el)) cancelAnimationFrame(running.get(el));
-    if (from === to) { el.textContent = fmt(to); return; }
+    if (from === to || !Effects.on('scores.countUp')) { el.textContent = fmt(to); return; }
     const t0 = performance.now();
     const step = (t) => {
       const k = Math.min(1, (t - t0) / ms);

@@ -19,6 +19,7 @@
 
   function burst({ x = 0.5, y = 0.4, count = 140, spread = Math.PI * 2, angle = -Math.PI / 2, power = 1 } = {}) {
     const COLOURS = palette();
+    count = Math.round(count * Effects.confettiScale());
     for (let i = 0; i < count; i++) {
       const a = angle + (Math.random() - .5) * spread;
       const v = (6 + Math.random() * 14) * power * dpr;
@@ -47,5 +48,5 @@
     burst({ x: 0.92, y: 1, angle: -Math.PI * 2 / 3, spread: 1, count: 90, power: 1.5 });
     burst({ x: 0.5, y: 0.35, count: 120 });
   }
-  window.Confetti = { burst, celebrate };
+  window.Confetti = { burst, celebrate, active: () => parts.length };
 })();

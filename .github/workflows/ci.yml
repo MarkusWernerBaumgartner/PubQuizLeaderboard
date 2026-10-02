@@ -14,8 +14,12 @@ permissions:
 
 jobs:
   test:
-    name: Tests & checks
-    runs-on: ubuntu-latest
+    name: Tests & checks (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,7 +30,7 @@ jobs:
       - name: Unit tests
         run: npm test
       - name: Syntax check (all JavaScript)
-        run: find . -name '*.js' -not -path './node_modules/*' -not -path './dist/*' -print0 | xargs -0 -n1 node --check
+        run: npm run check-syntax
       - name: Version & changelog consistency
         run: npm run check-release
       - name: Repository hygiene (no brand artwork, local presets or saved data)
@@ -35,9 +39,18 @@ jobs:
         run: node -e "require('./src/shared/logic').normalizeState(require('./examples/sample-quiz.json'))"
 
   smoke:
-    name: Headless app smoke & autosave tests
+    name: App smoke, effects & autosave (${{ matrix.os }})
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    # Windows and macOS runs are new and could not be tried locally; they report but do not block until proven.
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, experimental: false }
+          - { os: windows-latest, experimental: true }
+          - { os: macos-latest, experimental: true }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,31 +58,32 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Install display & runtime libraries
+      - name: Install display & runtime libraries (Linux)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb libasound2t64 libgbm1 libnss3 libgtk-3-0t64
-      - name: Run the app through a scripted scenario
-        run: |
-          mkdir -p "$RUNNER_TEMP/profile"
-          cp examples/sample-quiz.json "$RUNNER_TEMP/profile/quiz.json"
-          PUBQUIZ_DEV_SCENARIO=scripts/ci/smoke.json PUBQUIZ_DEV_OUT=smoke-out \
-            xvfb-run -a npx electron . --no-sandbox --disable-gpu --user-data-dir="$RUNNER_TEMP/profile"
-      - name: Verify screenshots and console output
-        run: node scripts/ci/check-smoke.js smoke-out
-      - name: Autosave survives a hard kill (SIGKILL → restart → nothing lost)
-        run: xvfb-run -a node scripts/ci/autosave-e2e.js
+      - name: Run the real app through scripted scenarios (Linux, virtual display)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run ci:smoke
+      - name: Run the real app through scripted scenarios
+        if: runner.os != 'Linux'
+        run: npm run ci:smoke
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: smoke-screenshots
+          name: smoke-screenshots-${{ matrix.os }}
           path: smoke-out
           retention-days: 7
 
   build:
-    name: Build AppImage
+    name: Build (${{ matrix.os }})
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -82,6 +96,10 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
       - uses: actions/upload-artifact@v4
         with:
-          name: appimage
-          path: dist/*.AppImage
+          name: build-${{ matrix.os }}
+          path: |
+            dist/*.AppImage
+            dist/*.exe
+            dist/*.dmg
+            dist/*.zip
           retention-days: 7
