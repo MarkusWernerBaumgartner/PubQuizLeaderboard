@@ -19,7 +19,12 @@ Set the quiz **title** (shown on the Leaderboard) and the **rounds**: how many, 
 Edit the list of rules shown on the big screen. Add rules with the input at the bottom, reorder with ▲▼, remove with ✕. The **Show rules** switch (also available as the *Rules* button in the bottom bar) covers the Leaderboard with an animated rules screen; turn it off to reveal the scoreboard. A fresh quiz starts with rules showing.
 
 ### Questions tab (optional)
-For each round you can add questions, each with the question text and exactly four options (A–D). Tick the radio button next to the correct option if you want to use **Reveal answer**. Questions are shown on the big screen as a slideshow (see below).
+For each round you can add questions of two kinds (use **+ Multiple choice** / **+ Written answer**, or switch a question's type with the buttons under its text):
+
+- **Multiple choice** – the question text and exactly four options (A–D). Tick the radio button next to the correct option if you want to use **Reveal answer**.
+- **Written answer** – just the question text, plus an optional model answer that appears when you press **Reveal answer**. Teams write their answers on paper; there is no options step for these.
+
+Questions are shown on the big screen as a slideshow (see below).
 
 ### Teams tab
 Add teams one at a time (type a name and press Enter) or paste a list, one name per line. Names must be unique (case-insensitive). Each team gets a colour automatically. Removing a team that has scores asks for confirmation.
@@ -28,6 +33,9 @@ Add teams one at a time (type a name and press Enter) or paste a list, one name 
 
 ### Scoring tab
 Pick a round with the round buttons (a ✓ means every team has a score for it), then type each team's score. **Enter** saves and moves to the next team. Clearing a box removes that score. Invalid input (letters, negatives, above the round's max) is rejected and the box shakes. **Undo** in the header reverts the last score change (up to 500 changes).
+
+### Penalties and bonuses
+Below the scores, **Penalties & bonuses** lets you adjust any team's total outside the rounds: choose the team, type the number of points, add a reason, then press **🚨 Penalty** (subtracts) or **🎁 Bonus** (adds). Use it to punish a cheat and reward whoever spotted it. Each adjustment is announced on the big screen with its reason (the screen shakes for a penalty, confetti for a bonus), a penalised team gets a ⚠ beside its name, and bonus points show as a gold block on its bar. Totals may go below zero. Undo reverts the latest adjustment; ✕ next to an entry in the list removes it. **Clear scores** also clears adjustments.
 
 On the Leaderboard, each change animates: the bar grows, the total counts up, teams re-order, a "+N" chip floats up, and when a team takes the lead or a round is completed there is confetti and a banner.
 
@@ -38,7 +46,9 @@ The bar at the bottom of Admin steps through the questions like a slideshow:
 
 `board → question → question + options → board → next question …`
 
-Use **Prev / Next**, the arrow keys, or Space (when no text box is focused). The dots show your position; click one to jump. On a question step the Leaderboard slides the scoreboard into the left two-thirds and shows the question on the right; the next step reveals the four options. **Reveal answer** highlights the correct option. The Leaderboard window also accepts ← → Space PageUp PageDown if you want to drive it directly.
+(Written-answer questions skip the options step: `board → question → board → …`.)
+
+Use **Prev / Next**, the arrow keys, or Space (when no text box is focused). The dots show your position; click one to jump. On a question step the Leaderboard slides the scoreboard into the left two-thirds and shows the question on the right; the next step reveals the four options. **Reveal answer** highlights the correct option, or, for a written question, shows the model answer on the question step. The Leaderboard window also accepts ← → Space PageUp PageDown if you want to drive it directly.
 
 ![Question slideshow](media/question-slideshow.gif)
 

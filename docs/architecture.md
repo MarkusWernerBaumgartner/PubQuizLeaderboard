@@ -40,20 +40,23 @@ If the reducer rejects an action (invalid score, duplicate team name, …) it re
 
 ```
 { version, title,
-  rounds:   [{ id, name, maxScore, questions: [{ text, options[4], correct|null }] }],
+  rounds:   [{ id, name, maxScore, questions: [
+              { type: 'choice', text, options[4], correct|null }      // multiple choice (default)
+            | { type: 'text', text, options: [], correct: null, answer } ] }],   // written answer
   teams:    [{ id, name, colour, scores: { [roundId]: number } }],
+  adjustments: [{ id, teamId, points (≠0; <0 penalty, >0 bonus), reason }],   // added to team totals
   rules:    { items: string[], visible: boolean },
   presentation: { step: number, revealAnswer: boolean },
-  history:  [{ teamId, roundId, prev, next }],   // for undo, capped at 500
+  history:  [{ teamId, roundId, prev, next } | { adjId }],   // for undo, capped at 500
   nextId }
 ```
 
-Actions: `setTitle`, `setRounds`, `addTeam`, `renameTeam`, `removeTeam`, `setScore`, `undo`, `clearScores`, `resetAll`, `setRules`, `setRulesVisible`, `setQuestions`, `presentNext`, `presentPrev`, `presentGoto`, `presentReveal`, `load`.
+Actions: `setTitle`, `setRounds`, `addTeam`, `renameTeam`, `removeTeam`, `setScore`, `addAdjustment`, `removeAdjustment`, `undo`, `clearScores`, `resetAll`, `setRules`, `setRulesVisible`, `setQuestions`, `presentNext`, `presentPrev`, `presentGoto`, `presentReveal`, `load`.
 
 `normalizeState` validates anything read from disk or a loaded file and fills in optional fields; bad shapes are rejected without touching the current state.
 
 ### Presentation steps
-`presentationSteps(state)` derives the slideshow from the rounds' questions: `[board, Q1, Q1+options, board, Q2, Q2+options, board, …]`. `presentation.step` indexes into it and is clamped whenever rounds or questions change.
+`presentationSteps(state)` derives the slideshow from the rounds' questions: `[board, Q1, Q1+options, board, Q2, Q2+options, board, …]` (written questions have no options step). `canReveal` says whether Reveal applies: on the options step for multiple choice, on the question step for written answers, only if an answer is set. `presentation.step` indexes into it and is clamped whenever rounds or questions change.
 
 ### Standings and stats
 `standings` ranks teams with competition ranking (ties share a rank) and computes each team's rank change relative to the standings before the most recent scored round. `stats` derives round winners, biggest climber, best/worst round per team, lead changes (counting only unique leaders), the gap at the top and the wooden spoon.

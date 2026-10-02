@@ -96,3 +96,14 @@ header h1 { flex: 1; font-size: 3rem; color: var(--accent-1); text-shadow: 0 .2r
 .banner.on { animation: banner 3.4s cubic-bezier(.2,1.4,.4,1) forwards; }
 @keyframes banner { 0% { opacity: 0; transform: translate(-50%, -3rem) scale(.6); } 12% { opacity: 1; transform: translate(-50%, 0) scale(1.05); } 20% { transform: translate(-50%, 0) scale(1); } 85% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, 1rem) scale(.95); } }
 @media (prefers-reduced-motion: reduce) { * { animation-duration: .01s !important; transition-duration: .01s !important; } }
+
+/* Written-answer reveal, penalties & bonuses */
+.qanswer { margin-top: .6rem; font: 700 2.2rem var(--display); color: var(--bg); background: var(--accent-3); border: .15rem solid #fff; border-radius: 1.2rem; padding: .8rem 1.2rem; opacity: 0; transform: translateY(2rem) scale(.95); transition: opacity .5s, transform .6s cubic-bezier(.2,1.3,.4,1); }
+.qpanel.reveal .qanswer { opacity: 1; transform: none; animation: correct-pop .9s ease; }
+.seg.bonus { background: var(--accent-1); }
+.row.penalised .nm::after { content: ' ⚠'; color: var(--accent-2); font-size: .8em; }
+.chipplus.neg { background: var(--accent-2); }
+.banner.penalty { background: var(--accent-2); color: #2b0a0a; }
+.banner { max-width: 94vw; white-space: normal; text-align: center; font-size: 2.8rem; line-height: 1.15; }
+@keyframes shake-screen { 10%, 50%, 90% { transform: translateX(-.6rem); } 30%, 70% { transform: translateX(.6rem); } }
+body.shake-screen #stage { animation: shake-screen .6s; }

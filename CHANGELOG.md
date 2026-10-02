@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- **Written-answer questions**: a question can be multiple choice (four options) or a written answer with an optional model answer. Written questions show only the question on the big screen; **Reveal answer** then shows the model answer.
+- **Penalties & bonuses**: in the Scoring tab, give any team penalty or bonus points with a reason (e.g. penalise a cheat, reward whoever spotted it). They count towards the total and ranking, are announced on the big screen with the reason, can be undone or removed, and are saved with the quiz.
 - **Save quiz as…**: choose a file and every change is autosaved to it, with a status chip in Admin (saved time, or a warning if the file can't be written). The link survives restarts; **Stop autosaving to file** removes it.
 - Store tests for saving, loading, linking, corruption and failure handling, and an end-to-end test that SIGKILLs the app and verifies nothing is lost.
 - GitHub Actions: CI (tests, hygiene and version checks, headless Electron smoke test, AppImage build) and a tag-triggered release workflow.
