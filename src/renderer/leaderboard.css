@@ -63,6 +63,15 @@ header h1 { flex: 1; font-size: 3rem; color: var(--accent-1); text-shadow: 0 .2r
 .scard li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @keyframes card-in { from { opacity: 0; transform: translateY(1.2rem) scale(.9); } to { opacity: 1; transform: none; } }
 
+/* Answer media: slides in from the left over the leaderboard, leaving the answer panel visible on the right */
+.mediapane { position: absolute; z-index: 150; top: 0; bottom: 0; left: 0; right: 33.333vw; display: grid; place-items: center; padding: 2rem;
+  background: radial-gradient(circle at 50% 40%, var(--bg-mid), var(--bg-deep));
+  opacity: 0; visibility: hidden; transform: translateX(-4rem); transition: opacity .6s, transform .8s cubic-bezier(.2,1,.3,1), visibility 0s .8s; }
+.stage.with-media .mediapane { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.media-item { max-width: 100%; max-height: 100%; border: 0; border-radius: 1.2rem; box-shadow: 0 1rem 3rem rgba(0,0,0,.55); background: #000; }
+img.media-item { object-fit: contain; max-height: calc(100vh - 4rem); }
+iframe.media-item { width: 100%; aspect-ratio: 16 / 9; height: auto; }
+
 /* Question panel */
 .qinner { width: 33.333vw; height: 100vh; padding: 2.4rem 2rem; display: flex; flex-direction: column; gap: 1.4rem; }
 .qround { align-self: flex-start; font: 600 1.1rem var(--display); background: var(--accent-2); color: #2b0a0a; padding: .3em 1em; border-radius: 999px; }

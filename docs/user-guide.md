@@ -19,7 +19,7 @@ Set the quiz **title** (shown on the Leaderboard) and the **rounds**: how many, 
 Edit the list of rules shown on the big screen. Add rules with the input at the bottom, reorder with ▲▼, remove with ✕. The **Show rules** switch (also available as the *Rules* button in the bottom bar) covers the Leaderboard with an animated rules screen; turn it off to reveal the scoreboard. A fresh quiz starts with rules showing.
 
 ### Questions tab (optional)
-For each round you can add questions, each with the question text and exactly four options (A–D). Tick the radio button next to the correct option if you want to use **Reveal answer**. Questions are shown on the big screen as a slideshow (see below).
+For each round you can add questions, each with the question text and exactly four options (A–D). Tick the radio button next to the correct option if you want to use **Reveal answer**. Questions are shown on the big screen as a slideshow (see below). Optionally add **Answer media** to a question: an `https://` link to an image or GIF (`.png .jpg .gif .webp …`) or a YouTube link. When you press **Reveal answer** the media slides in from the left over the leaderboard (YouTube videos autoplay), with the answer panel still visible on the right; it closes again when you un-reveal or move on. Needs an internet connection.
 
 ### Teams tab
 Add teams one at a time (type a name and press Enter) or paste a list, one name per line. Names must be unique (case-insensitive). Each team gets a colour automatically. Removing a team that has scores asks for confirmation.
