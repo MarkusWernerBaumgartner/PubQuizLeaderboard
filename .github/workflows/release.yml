@@ -60,7 +60,7 @@ jobs:
       - name: Extract release notes from CHANGELOG
         run: node scripts/check-release.js --notes "${GITHUB_REF_NAME#v}" > release-notes.md
       - name: Publish release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: ${{ github.ref_name }}
           body_path: release-notes.md
