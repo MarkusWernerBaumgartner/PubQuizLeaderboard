@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-02
+
 ### Added
 - **Written-answer questions**: a question can be multiple choice (four options) or a written answer with an optional model answer. Written questions show only the question on the big screen; **Reveal answer** then shows the model answer.
 - **Penalties & bonuses**: in the Scoring tab, give any team penalty or bonus points with a reason (e.g. penalise a cheat, reward whoever spotted it). They count towards the total and ranking, are announced on the big screen with the reason, can be undone or removed, and are saved with the quiz.
@@ -14,6 +16,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The `admin-branding.png` documentation screenshot showed the Effects tab; it now shows the Branding tab.
 
 ### Changed
+- Saved quizzes from 1.1.0 and earlier load unchanged: questions without a type are multiple choice, and quizzes without adjustments simply have none.
 - User guide gains a Branding section and Effects screenshot; README describes Save quiz as… / Load quiz… autosave.
 
 ## [1.1.0] - 2026-10-02
@@ -47,7 +50,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [1.0.0] - 2026-10-02
 
 ### Added
-- **Answer media**: attach an image/GIF URL or YouTube link to a question; it expands over the leaderboard when the answer is revealed.
 - Launcher, Admin and Leaderboard windows in one Electron app.
 - Persistent quiz state with autosave, export/load, clear scores, reset and automatic backups.
 - Animated leaderboard: race board with per-round segments, rank changes, confetti and a "new leader" banner.
@@ -56,6 +58,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Configurable branding: name, default title, colours, crest, wordmark and window icon, with preset import/export.
 - Sample quiz in `examples/sample-quiz.json`.
 
-[Unreleased]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/releases/tag/v1.0.0
