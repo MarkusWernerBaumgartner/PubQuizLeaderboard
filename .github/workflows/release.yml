@@ -1,6 +1,7 @@
 name: Release
 
-# Push a tag like v1.2.0 (created by `npm version`) to publish a GitHub release with the AppImage.
+# Push a tag like v1.2.0 (created by `npm version`) to publish a GitHub release with
+# the Linux AppImage, Windows installer + portable build, and macOS dmg/zip.
 on:
   push:
     tags: ["v*"]
@@ -9,8 +10,13 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,10 +28,35 @@ jobs:
         run: npm test
       - name: Tag matches package.json and CHANGELOG has an entry
         run: node scripts/check-release.js "${GITHUB_REF_NAME}"
-      - name: Build AppImage
+        shell: bash
+      - name: Build
         run: npm run dist
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.os }}
+          path: |
+            dist/*.AppImage
+            dist/*.exe
+            dist/*.dmg
+            dist/*.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: release
+          merge-multiple: true
       - name: Extract release notes from CHANGELOG
         run: node scripts/check-release.js --notes "${GITHUB_REF_NAME#v}" > release-notes.md
       - name: Publish release
@@ -33,5 +64,5 @@ jobs:
         with:
           name: ${{ github.ref_name }}
           body_path: release-notes.md
-          files: dist/*.AppImage
+          files: release/*
           prerelease: ${{ contains(github.ref_name, '-') }}

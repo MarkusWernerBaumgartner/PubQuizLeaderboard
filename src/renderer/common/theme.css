@@ -61,3 +61,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0; font-weight: 700; }
 .btn.small { font-size: .85rem; padding: .4em 1em; }
 .btn:disabled { opacity: .4; cursor: default; transform: none; }
 :focus-visible { outline: 3px solid var(--accent-1); outline-offset: 2px; }
+
+/* ---- Effects switched off in Settings (see src/shared/effects.js) ---- */
+html.fx-off-ambient-background .ambient { display: none; }
+html.fx-off-ambient-crest-wobble .crest { animation: none !important; }

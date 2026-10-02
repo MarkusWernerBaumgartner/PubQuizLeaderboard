@@ -98,3 +98,16 @@ footer .dots i.on { background: var(--accent-1); transform: scale(1.5); }
 .adj-pts { font: 700 1.2rem var(--display); min-width: 3.2rem; text-align: center; }
 .row.adj.penalty .adj-pts { color: var(--accent-2); }
 .row.adj.bonus .adj-pts { color: var(--accent-1); }
+
+/* ---- Effects switched off in Settings ---- */
+html.fx-off-admin-ui-motion .panel,
+html.fx-off-admin-ui-motion .dialog,
+html.fx-off-admin-ui-motion .shake,
+html.fx-off-admin-ui-motion .live i { animation: none !important; }
+html.fx-off-admin-ui-motion .switch,
+html.fx-off-admin-ui-motion .switch::after,
+html.fx-off-admin-ui-motion .btn { transition: none !important; }
+
+.fx-row { display: flex; align-items: center; gap: 1rem; padding: .45rem 0; }
+.fx-row .switch { flex: none; }
+

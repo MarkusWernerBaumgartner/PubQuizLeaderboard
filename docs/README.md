@@ -3,6 +3,7 @@
 | Guide | For |
 | --- | --- |
 | [User guide](user-guide.md) | Running a quiz night: setup, scoring, rules, questions, the big-screen display, saving data |
+| [Effects](effects.md) | Every animation, celebration and popup, and how to switch each one off |
 | [Branding](branding.md) | Making the app your own: name, colours, logo, icon, presets |
 | [Architecture](architecture.md) | How the app is built: processes, state, IPC, persistence, security |
 | [Development](development.md) | Working on the code: setup, tests, CI, regenerating the README media, versioning and releases |

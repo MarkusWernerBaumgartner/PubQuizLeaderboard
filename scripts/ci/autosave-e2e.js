@@ -18,13 +18,15 @@ fs.copyFileSync(path.join(root, 'examples', 'sample-quiz.json'), path.join(profi
 
 function runApp(scenario) {
   return spawnSync(require(path.join(root, 'node_modules', 'electron')),   // the real binary, so a SIGKILL is observable
-    [root, '--no-sandbox', '--disable-gpu', `--user-data-dir=${profile}`],
+    [root, ...(process.platform === 'linux' ? ['--no-sandbox'] : []), '--disable-gpu', `--user-data-dir=${profile}`],
     { env: { ...process.env, PUBQUIZ_DEV_SCENARIO: path.join(__dirname, scenario), PUBQUIZ_DEV_OUT: out }, encoding: 'utf8', timeout: 90000 });
 }
 const fail = (msg) => { console.error('Autosave e2e FAILED: ' + msg); process.exit(1); };
 
 const first = runApp('autosave-write.json');
-if (first.signal !== 'SIGKILL') fail(`run 1 should have been killed (got signal=${first.signal}, status=${first.status})`);
+// A killed Windows process reports no signal, only a non-zero exit status.
+const killed = first.signal === 'SIGKILL' || (process.platform === 'win32' && first.status !== 0);
+if (!killed) fail(`run 1 should have been killed (got signal=${first.signal}, status=${first.status})`);
 console.log('run 1: app killed with SIGKILL as intended');
 
 const linked = path.join(out, 'linked.json');

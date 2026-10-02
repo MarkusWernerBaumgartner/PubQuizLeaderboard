@@ -1,6 +1,7 @@
 (function () {
   const Q = window.quiz, L = window.QuizLogic;
   let state = null;
+  let fx = null;         // { effects } payload from the settings store
   let brand = null;      // { branding, images } payload from the branding store
   let section = 'scoring';
   let selRound = null;   // round shown in the Scoring tab
@@ -12,7 +13,7 @@
   const requested = new URLSearchParams(location.search).get('section');
   if (requested) section = requested;
 
-  const SECTIONS = [['setup', 'Setup'], ['rules', 'Rules'], ['questions', 'Questions'], ['teams', 'Teams'], ['scoring', 'Scoring'], ['branding', '⚙ Branding']];
+  const SECTIONS = [['setup', 'Setup'], ['rules', 'Rules'], ['questions', 'Questions'], ['teams', 'Teams'], ['scoring', 'Scoring'], ['effects', '✨ Effects'], ['branding', '⚙ Branding']];
   const $ = (id) => document.getElementById(id);
 
   function el(tag, props, ...kids) {
@@ -31,6 +32,7 @@
   // ---- helpers -----------------------------------------------------------
   let toastTimer;
   function toast(msg, ok) {
+    if (ok && !Effects.on('admin.successToasts')) return; // errors (ok falsy) are always shown
     const t = $('toast');
     t.textContent = msg; t.className = ok ? 'ok' : ''; t.hidden = false;
     clearTimeout(toastTimer);
@@ -255,6 +257,46 @@
   }
 
 
+
+  // ---- effects (animations & celebrations) -----------------------------------------
+  const PREVIEW_FLAGS = {
+    leadChange: ['celebrate.leadChange.confetti', 'celebrate.leadChange.banner'],
+    roundComplete: ['celebrate.roundComplete.confetti', 'celebrate.roundComplete.banner', 'celebrate.roundComplete.chipPop'],
+    reveal: ['celebrate.reveal.confetti', 'celebrate.reveal.highlight'],
+  };
+  function buildEffects() {
+    if (!fx) return el('div', { class: 'panel' }, el('div', { class: 'card' }, el('p', { text: 'Loading…' })));
+    const FX = window.QuizEffects, s = fx.effects;
+    const set = (patch) => Q.setSettings(patch);
+    const presetRow = el('div', { class: 'pills' },
+      Object.entries(FX.PRESETS).map(([name, p]) => el('button', { class: 'pill' + (s.preset === name ? ' on' : ''), text: p.label, onclick: () => Q.applyEffectsPreset(name) })),
+      s.preset === 'custom' ? el('span', { class: 'pill on', text: '🎛 Custom' }) : null);
+    const amount = el('select', { 'data-key': 'fx-amount', onchange: (e) => set({ confettiAmount: e.target.value }) },
+      [['low', 'Low'], ['normal', 'Normal'], ['lots', 'Lots']].map(([v, label]) => el('option', { value: v, text: label })));
+    amount.value = s.confettiAmount;
+    const follow = el('input', { type: 'checkbox', checked: s.followSystemReducedMotion, onchange: (e) => set({ followSystemReducedMotion: e.target.checked }) });
+    const flagRow = (f) => el('div', { class: 'fx-row' },
+      el('div', { class: 'switch' + (s.flags[f.key] ? ' on' : ''), role: 'switch', tabindex: 0, 'aria-checked': String(s.flags[f.key]), 'aria-label': f.label,
+        onclick: () => set({ flags: { [f.key]: !s.flags[f.key] } }),
+        onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set({ flags: { [f.key]: !s.flags[f.key] } }); } } }),
+      el('div', {}, el('b', { text: f.label }), el('div', { class: 'muted', text: f.hint })));
+    const previews = el('div', { class: 'row', style: 'margin-top:.8rem' }, el('span', { class: 'muted', text: 'Preview on the Leaderboard:' }),
+      FX.PREVIEWS.map((p) => el('button', { class: 'btn small', text: '▶ ' + p.label, onclick: async () => {
+        if (!PREVIEW_FLAGS[p.kind].some((k) => s.flags[k])) { toast('Nothing to preview – those effects are switched off'); return; }
+        const r = await Q.previewEffect(p.kind);
+        if (!r.delivered) toast('Open the Leaderboard window to see the preview');
+      } })));
+    return el('div', { class: 'panel' },
+      el('div', { class: 'card' }, el('h2', { text: 'Animations & celebrations' }),
+        el('p', { class: 'muted', text: 'Pick a preset, then fine-tune individual effects. Changes apply instantly on every screen. Error messages and "are you sure?" confirmations are always shown.' }),
+        presetRow,
+        el('div', { class: 'row' }, el('label', { class: 'field', style: 'width:200px' }, 'Confetti amount', amount),
+          el('label', { class: 'row', style: 'margin:1.4rem 0 0 1rem;gap:.5rem' }, follow, el('span', { text: "Respect my computer's “reduce motion” setting" })))),
+      FX.GROUPS.map((g) => el('div', { class: 'card' }, el('h2', { text: g.label }), el('div', { class: 'muted', style: 'margin:-.4rem 0 .6rem', text: g.blurb }),
+        FX.FLAGS.filter((f) => f.group === g.id).map(flagRow), g.id === 'celebrations' ? previews : null)),
+      el('div', { class: 'card' }, el('button', { class: 'btn small coral', text: 'Reset to defaults (Party)', onclick: () => Q.resetSettings() })));
+  }
+
   // ---- branding ------------------------------------------------------------
   const COLOUR_LABELS = {
     bg: ['Background', 'Main screen background'], bgDeep: ['Background (dark)', 'Edges, bars and panels'], bgMid: ['Background (light)', 'Glow and cards'],
@@ -313,7 +355,7 @@
           el('button', { class: 'btn small coral', text: 'Reset to default', onclick: async () => { if (await confirmDialog('Reset the name, title, colours and images to the built-in defaults?', 'Reset branding')) brandResult(await Q.resetBranding(), 'Branding reset'); } }))));
   }
 
-  const BUILDERS = { setup: buildSetup, rules: buildRules, questions: buildQuestions, teams: buildTeams, scoring: buildScoring, branding: buildBranding };
+  const BUILDERS = { setup: buildSetup, rules: buildRules, questions: buildQuestions, teams: buildTeams, scoring: buildScoring, effects: buildEffects, branding: buildBranding };
 
   // ---- presentation bar -----------------------------------------------------
   function describeStep(step) {
@@ -367,7 +409,7 @@
     $('head-title').textContent = state.title;
     $('nav').replaceChildren(...SECTIONS.map(([k, label]) => el('button', { class: k === section ? 'on' : '', text: label, onclick: () => go(k) })));
     $('undo').disabled = state.history.length === 0;
-    const key = section + '|' + JSON.stringify({ ...state, presentation: null }) + '|' + selRound + '|' + qRound + '|' + (brand ? JSON.stringify(brand.branding) : '');
+    const key = section + '|' + JSON.stringify({ ...state, presentation: null }) + '|' + selRound + '|' + qRound + '|' + (brand ? JSON.stringify(brand.branding) : '') + '|' + (fx ? JSON.stringify(fx.effects) : '');
     if (force || key !== lastMainKey) {
       lastMainKey = key;
       withFocusKept(() => $('main').replaceChildren(BUILDERS[section]()));
@@ -421,6 +463,8 @@
 
   Q.onChange((s) => { state = s; render(false); });
   Q.onBrandingChange((p) => { brand = p; render(false); });
+  Q.onSettingsChange((v) => { fx = v; render(false); });
+  Q.getSettings().then((v) => { fx = v; render(false); });
   Q.onAdminSection((name) => { if (BUILDERS[name]) go(name); });
   Q.getBranding().then((p) => { brand = p; render(false); });
   Q.getState().then((s) => { state = s; render(true); });

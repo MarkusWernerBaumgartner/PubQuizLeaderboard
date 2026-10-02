@@ -55,4 +55,4 @@ Invalid values never break the app: unknown keys are ignored, bad colours (anyth
 
 ## Where it is stored
 
-Branding lives in `~/.config/pubquiz-scoring/branding.json` with images in `branding-assets/`, separate from the quiz data. *Reset everything* never touches it, and none of it is part of the repository. If you publish a fork, keep personal presets and artwork in the gitignored `local/` folder (see [Development](development.md#keeping-personal-data-out-of-git)).
+Branding lives in `branding.json` (images in `branding-assets/`) in the app's data folder (see the [user guide](user-guide.md#saving-and-loading) for its location on each system), separate from the quiz data. *Reset everything* never touches it, and none of it is part of the repository. If you publish a fork, keep personal presets and artwork in the gitignored `local/` folder (see [Development](development.md#keeping-personal-data-out-of-git)).

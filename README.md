@@ -8,7 +8,7 @@ Score from your laptop, watch the leaderboard race, confetti and all, on the big
 [![CI](https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/actions/workflows/ci.yml/badge.svg)](https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/github/package-json/v/MarkusWernerBaumgartner/PubQuizLeaderboard?label=version&color=4c54c9)](CHANGELOG.md)
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-4ecdc4.svg)](LICENSE)
-![Platform](https://img.shields.io/badge/platform-Linux-ffc83d)
+![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20macOS-ffc83d)
 ![Electron](https://img.shields.io/badge/built%20with-Electron-a78bfa)
 
 <img src="docs/media/leaderboard.png" alt="The animated leaderboard" width="100%">
@@ -39,6 +39,11 @@ Your name, your logo, your colours, your window icon: all from the **Branding** 
 
 <img src="docs/media/theming.gif" alt="The theme changing live" width="100%">
 
+### 🎚️ Dial it up or down
+Not every venue wants confetti. Every animation, banner and celebration has its own switch in the **Effects** tab, with one-click presets (Party / Calm / Minimal / Off), a confetti-amount control and preview buttons. It also respects your computer's "reduce motion" setting.
+
+<img src="docs/media/admin-effects.png" alt="The Effects settings tab" width="100%">
+
 ### 🛟 Built so you can't lose the night
 Every score is saved the instant you type it, so closing the window or pulling the plug loses nothing. Optionally autosave to a file of your choice (a USB stick, a synced folder), with a live status chip so you can see it working.
 
@@ -64,14 +69,17 @@ Every score is saved the instant you type it, so closing the window or pulling t
 
 ## 🚀 Quick start
 
-**Download:** grab the latest AppImage from the [Releases](https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/releases) page, make it executable and run it:
+**Download** the build for your system from the [Releases](https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/releases) page:
 
-```bash
-chmod +x PubQuizScoring-*.AppImage
-./PubQuizScoring-*.AppImage
-```
+| System | File | How to run |
+| --- | --- | --- |
+| 🐧 Linux | `PubQuizScoring-<version>-linux.AppImage` | `chmod +x` it and run it |
+| 🪟 Windows | `PubQuizScoring-Setup-<version>.exe` (installer) or `…-portable.exe` | Run it. If SmartScreen warns, choose *More info → Run anyway* |
+| 🍎 macOS | `PubQuizScoring-<version>-mac-arm64.dmg` (Apple Silicon) or `…-mac-x64.dmg` (Intel) | Drag to Applications. If macOS blocks it, right-click → *Open* (or run `xattr -dr com.apple.quarantine "/Applications/Pub Quiz Scoring.app"`) |
 
-**Or run from source** (Node.js 20+):
+> The builds are not code-signed, which is why Windows and macOS show a warning the first time.
+
+**Or run from source** (Node.js 20+, any of the three systems):
 
 ```bash
 git clone https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard.git
@@ -92,13 +100,14 @@ npm start
 | --- | --- |
 | 📖 [User guide](docs/user-guide.md) | Run a quiz night, step by step |
 | 🎨 [Branding](docs/branding.md) | Colours, logos, presets |
+| 🎚️ [Effects](docs/effects.md) | Every animation and popup, and how to switch it off |
 | 🏗️ [Architecture](docs/architecture.md) | How it's built |
 | 🛠️ [Development](docs/development.md) | Tests, CI, regenerating these GIFs, releases |
 | 📝 [Changelog](CHANGELOG.md) | What changed in each version |
 
 ## 🧰 Under the hood
 
-Electron with plain HTML/CSS/JS (no framework, no bundler). All game logic is a small pure module with a full unit-test suite, and CI runs the real app headlessly, including a test that kills it mid-quiz and checks that nothing was lost. Everything stays on your machine in `~/.config/pubquiz-scoring/`; there's no server, account or network access.
+Electron with plain HTML/CSS/JS (no framework, no bundler). All game logic is a small pure module with a full unit-test suite, and CI runs the real app headlessly, including a test that kills it mid-quiz and checks that nothing was lost. Everything stays on your machine, in the app's data folder (see the [user guide](docs/user-guide.md#saving-and-loading)); there's no server, account or network access.
 
 ```bash
 npm test          # unit tests

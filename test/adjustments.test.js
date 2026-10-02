@@ -99,3 +99,15 @@ test('adjustments survive setRounds and normalizeState; old saves load without t
   const orphan = JSON.parse(JSON.stringify(s)); orphan.adjustments[0].teamId = 'zzz';
   assert.deepEqual(L.normalizeState(orphan).adjustments, []);
 });
+
+// ---- effects integration -----------------------------------------------------------
+test('penalty/bonus effects are switchable and presets treat them sensibly', () => {
+  const E = require('../src/shared/effects');
+  const keys = ['celebrate.adjustment.banner', 'celebrate.adjustment.shake', 'celebrate.adjustment.confetti'];
+  for (const k of keys) assert.ok(E.FLAGS.some((f) => f.key === k), k);
+  assert.ok(keys.every((k) => E.PRESETS.party.flags[k]));
+  assert.deepEqual(keys.map((k) => E.PRESETS.calm.flags[k]), [true, false, false]);
+  assert.deepEqual(keys.map((k) => E.PRESETS.minimal.flags[k]), [true, false, false]); // the reason is information, so it stays
+  assert.ok(keys.every((k) => !E.PRESETS.off.flags[k]));
+  assert.ok(E.htmlClasses({ flags: { ...E.PRESETS.off.flags } }).length > 0);
+});

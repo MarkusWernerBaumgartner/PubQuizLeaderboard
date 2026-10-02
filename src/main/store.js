@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const { EventEmitter } = require('events');
 const L = require('../shared/logic');
+const { writeAtomic, attempt } = require('./fsutil');
 
 const DESTRUCTIVE = new Set(['clearScores', 'resetAll', 'load']);
 
@@ -136,25 +137,6 @@ function validLinkPath(p, workingCopy) {
   if (path.extname(p).toLowerCase() !== '.json') return 'Save files must end in .json';
   if (path.resolve(p) === path.resolve(workingCopy)) return 'That is the app\'s own working copy – pick another file';
   return null;
-}
-
-// Write to a temp file in the same directory, flush it to disk, then rename over the target,
-// so a crash can never leave a half-written save file.
-function writeAtomic(file, data) {
-  const tmp = `${file}.${process.pid}.tmp`;
-  try {
-    const fd = fs.openSync(tmp, 'w');
-    try { fs.writeSync(fd, data); fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
-    fs.renameSync(tmp, file);
-  } catch (e) {
-    try { fs.rmSync(tmp, { force: true }); } catch (_) { /* ignore */ }
-    throw e;
-  }
-}
-
-// Run a write and report { savedAt, error } instead of throwing.
-function attempt(fn) {
-  try { fn(); return { savedAt: Date.now(), error: null }; } catch (e) { return { savedAt: null, error: e.message }; }
 }
 
 function stamp() { return new Date().toISOString().replace(/[:.]/g, '-'); }
