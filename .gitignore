@@ -1,6 +1,7 @@
 # dependencies / build output
 node_modules/
 dist/
+dist-local/
 *.AppImage
 
 # personal & local-only (branding presets, private notes, tooling state)

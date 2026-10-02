@@ -34,6 +34,17 @@ contextBridge.exposeInMainWorld('quiz', {
     return () => ipcRenderer.removeListener('branding:changed', handler);
   },
   onAdminSection: (cb) => ipcRenderer.on('admin:section', (_e, section) => cb(section)),
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+  setSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
+  applyEffectsPreset: (name) => ipcRenderer.invoke('settings:preset', name),
+  resetSettings: () => ipcRenderer.invoke('settings:reset'),
+  previewEffect: (kind) => ipcRenderer.invoke('effects:preview', kind),
+  onSettingsChange: (cb) => {
+    const handler = (_e, v) => cb(v);
+    ipcRenderer.on('settings:changed', handler);
+    return () => ipcRenderer.removeListener('settings:changed', handler);
+  },
+  onEffectPreview: (cb) => ipcRenderer.on('effects:preview', (_e, kind) => cb(kind)),
   appInfo: () => ipcRenderer.invoke('app:info'),
   quit: () => ipcRenderer.invoke('app:quit'),
 });

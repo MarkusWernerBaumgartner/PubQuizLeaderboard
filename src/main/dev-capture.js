@@ -5,6 +5,7 @@
 //   { "wait": ms }                         { "dispatch": <quiz action> }          { "branding": <patch> | "reset" }
 //   { "open": kind, "section"?, "size"? }  { "shot": name, "window": kind, "width"? }
 //   { "record": name, "window": kind, "fps"?, "width"? }   { "stop": true }
+//   { "settings": <effects patch> | { "preset": name } }   { "eval": "js", "window": kind, "equals": value }  (run in the renderer)
 //   { "linkTo": "file.json" }  autosave link (relative to the output dir)      { "crash": true }  SIGKILL, no cleanup
 //   { "expect": "teams.length", "equals": 9 }   assert on the quiz state     { "expectLinked": true|false }
 // In dispatched actions, "@team:N" / "@round:N" are replaced by the id of the Nth (0-based) team / round.
@@ -27,7 +28,7 @@ function resolveRefs(value, state) {
 }
 
 async function run(scenarioFile, outDir, ctx) {
-  const { app, windows, createWindow, store, branding } = ctx;
+  const { app, windows, createWindow, store, branding, settings } = ctx;
   const scenario = JSON.parse(fs.readFileSync(scenarioFile, 'utf8'));
   outDir = path.resolve(outDir || 'media-out');
   fs.mkdirSync(outDir, { recursive: true });
@@ -40,6 +41,7 @@ async function run(scenarioFile, outDir, ctx) {
     const w = createWindow(kind, opts);
     const [ww, wh] = opts.size || scenario.size || [W, H];
     if (w.isFullScreen()) w.setFullScreen(false);
+    if (process.platform === 'darwin' && w.isSimpleFullScreen()) w.setSimpleFullScreen(false);
     w.setBounds({ x: 0, y: 0, width: ww, height: wh });
     if (!watched.has(w)) {
       watched.add(w);
@@ -104,6 +106,11 @@ async function run(scenarioFile, outDir, ctx) {
       else if (a.branding) { if (a.branding === 'reset') branding.reset(); else branding.set(a.branding); }
       else if (a.open) { open(a.open, { section: a.section, size: a.size }); await wait(a.settle || 1200); }
       else if (a.shot) fs.writeFileSync(path.join(outDir, `${a.shot}.png`), await grab(a.window, a.width));
+      else if (a.settings) { if (a.settings.preset) settings.applyPreset(a.settings.preset); else settings.setEffects(a.settings); }
+      else if (a.eval) {
+        const got = await target(a.window).webContents.executeJavaScript(a.eval);
+        if (JSON.stringify(got) !== JSON.stringify(a.equals)) errors.push(`[eval] ${a.eval} = ${JSON.stringify(got)}, wanted ${JSON.stringify(a.equals)}`);
+      }
       else if (a.linkTo) { const r = store.linkTo(path.resolve(outDir, a.linkTo)); if (!r.ok) errors.push(`[scenario] linkTo failed: ${r.error}`); }
       else if (a.crash) process.kill(process.pid, 'SIGKILL');
       else if (a.expect) {

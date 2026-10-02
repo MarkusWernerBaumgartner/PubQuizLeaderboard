@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const { Store } = require('./src/main/store');
 const { BrandingStore } = require('./src/main/branding');
+const { SettingsStore } = require('./src/main/settings');
+const E = require('./src/shared/effects');
 const B = require('./src/shared/branding');
 const L = require('./src/shared/logic');
 
@@ -11,8 +13,15 @@ if (!app.requestSingleInstanceLock()) app.quit();
 
 let store;
 let branding;
+let settings;
 const DEFAULT_ICON = path.join(__dirname, 'build', 'icon.png');
 const windows = {}; // kind -> BrowserWindow
+
+// Fullscreen helpers. macOS' native fullscreen moves a window to its own Space and ignores its bounds,
+// so there we use "simple" fullscreen, which keeps the window on the display it was placed on.
+const isMac = process.platform === 'darwin';
+const isFs = (w) => (isMac ? w.isSimpleFullScreen() : w.isFullScreen());
+const setFs = (w, on) => (isMac ? w.setSimpleFullScreen(on) : w.setFullScreen(on));
 
 const PAGES = { launcher: 'launcher.html', admin: 'admin.html', leaderboard: 'leaderboard.html' };
 
@@ -49,8 +58,8 @@ function createWindow(kind, opts = {}) {
   });
   win.webContents.on('before-input-event', (event, input) => {
     if (input.type !== 'keyDown') return;
-    if (input.key === 'F11') { win.setFullScreen(!win.isFullScreen()); event.preventDefault(); }
-    else if (input.key === 'Escape' && win.isFullScreen()) { win.setFullScreen(false); event.preventDefault(); }
+    if (input.key === 'F11') { setFs(win, !isFs(win)); event.preventDefault(); }
+    else if (input.key === 'Escape' && isFs(win)) { setFs(win, false); event.preventDefault(); }
   });
   win.on('closed', () => { delete windows[kind]; });
   return win;
@@ -58,9 +67,9 @@ function createWindow(kind, opts = {}) {
 
 function placeOnDisplay(win, displayId) {
   const d = screen.getAllDisplays().find((x) => x.id === displayId) || screen.getPrimaryDisplay();
-  if (win.isFullScreen()) win.setFullScreen(false);
+  if (isFs(win)) setFs(win, false);
   win.setBounds(d.bounds);
-  win.setFullScreen(true);
+  setFs(win, true);
 }
 
 function broadcast(state) {
@@ -70,20 +79,29 @@ function broadcast(state) {
 function parentFor(e) { return BrowserWindow.fromWebContents(e.sender) || undefined; }
 
 app.whenReady().then(() => {
-  Menu.setApplicationMenu(null);
+  // Windows/Linux: no menu bar. macOS needs a minimal one, otherwise ⌘C/⌘V/⌘Q do not work.
+  Menu.setApplicationMenu(isMac ? Menu.buildFromTemplate([
+    { role: 'appMenu' }, { role: 'editMenu' },
+    { label: 'View', submenu: [{ role: 'togglefullscreen' }] }, { role: 'windowMenu' },
+  ]) : null);
   // YouTube refuses embeds that carry no referrer (error 153), which is what pages loaded from file:// send.
   session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['https://www.youtube-nocookie.com/*'] }, (details, cb) => {
     cb({ requestHeaders: { ...details.requestHeaders, Referer: 'https://pubquiz.local/' } });
   });
   branding = new BrandingStore(app.getPath('userData'));
+  settings = new SettingsStore(app.getPath('userData'));
+  settings.on('change', (v) => { for (const w of BrowserWindow.getAllWindows()) if (!w.isDestroyed()) w.webContents.send('settings:changed', v); });
   store = new Store(app.getPath('userData'), () => branding.getDefaultTitle());
   store.on('change', broadcast);
   store.on('save', (status) => { for (const w of BrowserWindow.getAllWindows()) if (!w.isDestroyed()) w.webContents.send('save:changed', status); });
+  const updateDockIcon = () => { if (isMac && app.dock) app.dock.setIcon(branding.iconPath() || DEFAULT_ICON); };
+  updateDockIcon();
   branding.on('change', (payload) => {
+    updateDockIcon();
     for (const w of BrowserWindow.getAllWindows()) {
       if (w.isDestroyed()) continue;
       w.webContents.send('branding:changed', payload);
-      w.setIcon(branding.iconPath() || DEFAULT_ICON);
+      if (!isMac) w.setIcon(branding.iconPath() || DEFAULT_ICON);
     }
   });
 
@@ -96,7 +114,18 @@ app.whenReady().then(() => {
       id: d.id, label: `Display ${i + 1} (${d.size.width}×${d.size.height})${d.id === primary ? ' – primary' : ''}`, primary: d.id === primary,
     }));
   });
-  ipcMain.handle('window:fullscreen', (e) => { const w = parentFor(e); if (w) w.setFullScreen(!w.isFullScreen()); });
+  ipcMain.handle('window:fullscreen', (e) => { const w = parentFor(e); if (w) setFs(w, !isFs(w)); });
+  // ---- settings (animations / effects) ----
+  ipcMain.handle('settings:get', () => settings.get());
+  ipcMain.handle('settings:set', (_e, patch) => { settings.setEffects(patch || {}); return settings.get(); });
+  ipcMain.handle('settings:preset', (_e, name) => { settings.applyPreset(name); return settings.get(); });
+  ipcMain.handle('settings:reset', () => { settings.reset(); return settings.get(); });
+  ipcMain.handle('effects:preview', (_e, kind) => {
+    if (!E.PREVIEWS.some((p) => p.kind === kind)) return { ok: false };
+    for (const w of BrowserWindow.getAllWindows()) if (!w.isDestroyed()) w.webContents.send('effects:preview', kind);
+    return { ok: true, delivered: !!(windows.leaderboard && !windows.leaderboard.isDestroyed()) };
+  });
+
   // ---- branding ----
   const brandingAction = (fn) => async (e, ...args) => {
     try { await fn(e, ...args); return { ok: true, payload: branding.payload() }; }
@@ -158,7 +187,7 @@ app.whenReady().then(() => {
   createWindow('launcher');
   if (process.env.PUBQUIZ_DEV_SCENARIO) {
     // Scripted run for docs media and CI smoke tests (see scripts/media, scripts/ci).
-    require('./src/main/dev-capture').run(process.env.PUBQUIZ_DEV_SCENARIO, process.env.PUBQUIZ_DEV_OUT, { app, windows, createWindow, store, branding });
+    require('./src/main/dev-capture').run(process.env.PUBQUIZ_DEV_SCENARIO, process.env.PUBQUIZ_DEV_OUT, { app, windows, createWindow, store, branding, settings });
   }
   app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow('launcher'); });
 });

@@ -26,3 +26,7 @@
 .display-pick { color: var(--muted); font-weight: 600; display: flex; gap: .6rem; align-items: center; }
 .display-pick select { font: inherit; padding: .35em .8em; border-radius: 999px; border: 2px solid var(--line); background: var(--bg-deep); color: var(--text); }
 .foot { color: var(--muted); font-size: .9rem; margin: 0; }
+
+html.fx-off-screens-launcher-intro .brand,
+html.fx-off-screens-launcher-intro .title,
+html.fx-off-screens-launcher-intro .choice { animation: none !important; }

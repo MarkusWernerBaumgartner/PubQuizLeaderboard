@@ -89,3 +89,15 @@ footer .dots i.on { background: var(--accent-1); transform: scale(1.5); }
 .savechip { font: 700 .8rem var(--body); color: var(--muted); max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: .3em .8em; border-radius: 999px; border: 2px solid var(--line); }
 .savechip.linked { color: var(--accent-3); border-color: var(--accent-3); }
 .savechip.warn { color: #2b0a0a; background: var(--accent-2); border-color: var(--accent-2); }
+
+/* ---- Effects switched off in Settings ---- */
+html.fx-off-admin-ui-motion .panel,
+html.fx-off-admin-ui-motion .dialog,
+html.fx-off-admin-ui-motion .shake,
+html.fx-off-admin-ui-motion .live i { animation: none !important; }
+html.fx-off-admin-ui-motion .switch,
+html.fx-off-admin-ui-motion .switch::after,
+html.fx-off-admin-ui-motion .btn { transition: none !important; }
+
+.fx-row { display: flex; align-items: center; gap: 1rem; padding: .45rem 0; }
+.fx-row .switch { flex: none; }

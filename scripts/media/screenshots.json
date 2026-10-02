@@ -1,27 +1,127 @@
 {
-  "size": [1600, 900],
-  "windows": ["leaderboard"],
+  "size": [
+    1600,
+    900
+  ],
+  "windows": [
+    "leaderboard"
+  ],
   "actions": [
-    { "wait": 2500 },
-    { "shot": "leaderboard", "window": "leaderboard", "width": 1600 },
-    { "dispatch": { "type": "presentGoto", "step": 2 } },
-    { "wait": 1800 },
-    { "dispatch": { "type": "presentReveal" } },
-    { "wait": 1500 },
-    { "shot": "leaderboard-question", "window": "leaderboard", "width": 1600 },
-    { "dispatch": { "type": "presentGoto", "step": 0 } },
-    { "dispatch": { "type": "setRulesVisible", "visible": true } },
-    { "wait": 4500 },
-    { "shot": "rules", "window": "leaderboard", "width": 1600 },
-    { "dispatch": { "type": "setRulesVisible", "visible": false } },
-    { "open": "launcher", "size": [1000, 680], "settle": 1800 },
-    { "shot": "launcher", "window": "launcher", "width": 1000 },
-    { "linkTo": "friday-quiz.json" },
-    { "open": "admin", "section": "scoring", "size": [1500, 900], "settle": 1800 },
-    { "shot": "admin-scoring", "window": "admin", "width": 1500 },
-    { "open": "admin", "section": "questions", "settle": 1200 },
-    { "shot": "admin-questions", "window": "admin", "width": 1500 },
-    { "open": "admin", "section": "branding", "settle": 1200 },
-    { "shot": "admin-branding", "window": "admin", "width": 1500 }
+    {
+      "wait": 2500
+    },
+    {
+      "shot": "leaderboard",
+      "window": "leaderboard",
+      "width": 1600
+    },
+    {
+      "dispatch": {
+        "type": "presentGoto",
+        "step": 2
+      }
+    },
+    {
+      "wait": 1800
+    },
+    {
+      "dispatch": {
+        "type": "presentReveal"
+      }
+    },
+    {
+      "wait": 1500
+    },
+    {
+      "shot": "leaderboard-question",
+      "window": "leaderboard",
+      "width": 1600
+    },
+    {
+      "dispatch": {
+        "type": "presentGoto",
+        "step": 0
+      }
+    },
+    {
+      "dispatch": {
+        "type": "setRulesVisible",
+        "visible": true
+      }
+    },
+    {
+      "wait": 4500
+    },
+    {
+      "shot": "rules",
+      "window": "leaderboard",
+      "width": 1600
+    },
+    {
+      "dispatch": {
+        "type": "setRulesVisible",
+        "visible": false
+      }
+    },
+    {
+      "open": "launcher",
+      "size": [
+        1000,
+        680
+      ],
+      "settle": 1800
+    },
+    {
+      "shot": "launcher",
+      "window": "launcher",
+      "width": 1000
+    },
+    {
+      "linkTo": "friday-quiz.json"
+    },
+    {
+      "open": "admin",
+      "section": "scoring",
+      "size": [
+        1500,
+        900
+      ],
+      "settle": 1800
+    },
+    {
+      "shot": "admin-scoring",
+      "window": "admin",
+      "width": 1500
+    },
+    {
+      "open": "admin",
+      "section": "questions",
+      "settle": 1200
+    },
+    {
+      "shot": "admin-questions",
+      "window": "admin",
+      "width": 1500
+    },
+    {
+      "open": "admin",
+      "section": "branding",
+      "settle": 1200
+    },
+    {
+      "open": "admin",
+      "section": "effects",
+      "settle": 1200
+    },
+    {
+      "shot": "admin-effects",
+      "window": "admin",
+      "width": 1500
+    },
+    {
+      "shot": "admin-branding",
+      "window": "admin",
+      "width": 1500
+    }
   ]
 }
