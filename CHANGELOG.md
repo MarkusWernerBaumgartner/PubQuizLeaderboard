@@ -5,6 +5,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Answer media**: attach an image/GIF URL or YouTube link to a question; it expands over the leaderboard when the answer is revealed.
+
 ### Fixed
 - The `admin-branding.png` documentation screenshot showed the Effects tab; it now shows the Branding tab.
 
@@ -42,6 +45,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [1.0.0] - 2026-10-02
 
 ### Added
+- **Answer media**: attach an image/GIF URL or YouTube link to a question; it expands over the leaderboard when the answer is revealed.
 - Launcher, Admin and Leaderboard windows in one Electron app.
 - Persistent quiz state with autosave, export/load, clear scores, reset and automatic backups.
 - Animated leaderboard: race board with per-round segments, rank changes, confetti and a "new leader" banner.

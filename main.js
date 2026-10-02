@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen, dialog, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, dialog, Menu, session } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { Store } = require('./src/main/store');
@@ -84,6 +84,10 @@ app.whenReady().then(() => {
     { role: 'appMenu' }, { role: 'editMenu' },
     { label: 'View', submenu: [{ role: 'togglefullscreen' }] }, { role: 'windowMenu' },
   ]) : null);
+  // YouTube refuses embeds that carry no referrer (error 153), which is what pages loaded from file:// send.
+  session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['https://www.youtube-nocookie.com/*'] }, (details, cb) => {
+    cb({ requestHeaders: { ...details.requestHeaders, Referer: 'https://pubquiz.local/' } });
+  });
   branding = new BrandingStore(app.getPath('userData'));
   settings = new SettingsStore(app.getPath('userData'));
   settings.on('change', (v) => { for (const w of BrowserWindow.getAllWindows()) if (!w.isDestroyed()) w.webContents.send('settings:changed', v); });

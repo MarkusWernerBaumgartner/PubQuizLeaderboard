@@ -121,7 +121,7 @@
     const round = state.rounds.find((r) => r.id === qRound);
     const qs = round.questions;
     const commit = (list) => dispatch({ type: 'setQuestions', roundId: round.id, questions: list });
-    const copy = () => qs.map((q) => ({ text: q.text, options: q.options.slice(), correct: q.correct }));
+    const copy = () => qs.map((q) => ({ text: q.text, options: q.options.slice(), correct: q.correct, media: q.media || '' }));
     const cards = qs.map((q, qi) => el('div', { class: 'q-card' },
       el('div', { class: 'row' },
         el('b', { class: 'muted', text: 'Q' + (qi + 1) }),
@@ -136,6 +136,11 @@
           onchange: (e) => { const l = copy(); l[qi].options[oi] = e.target.value; commit(l); } }); inp.value = o; return inp; })(),
         el('input', { type: 'radio', name: 'correct' + qi, title: 'Mark as correct answer', checked: q.correct === oi,
           onclick: () => { const l = copy(); l[qi].correct = oi; commit(l); } }))),
+      el('div', { class: 'row', style: 'margin-top:.5rem' },
+        el('span', { class: 'muted', text: '🖼 Answer media' }),
+        (() => { const inp = el('input', { type: 'text', class: 'grow', placeholder: 'Optional: image/GIF URL (https://….gif) or YouTube link – shown when the answer is revealed',
+          onchange: (e) => { const l = copy(); l[qi].media = e.target.value; commit(l); } }); inp.value = q.media || ''; return inp; })()),
+      q.media ? el('div', { class: 'muted', style: 'margin-top:.25rem', text: (() => { const m = L.parseMedia(q.media); return m ? (m.kind === 'youtube' ? '✓ YouTube video – plays on reveal' : '✓ Image – shown on reveal') : '⚠ Not recognised: use an https:// link to an image/GIF (.png .jpg .gif .webp …) or a YouTube video'; })() }) : null,
       el('div', { class: 'row muted', style: 'margin-top:.5rem' },
         el('span', { text: q.correct == null ? 'No correct answer set (optional – needed for "Reveal answer")' : `Correct answer: ${'ABCD'[q.correct]}` }),
         q.correct == null ? null : el('button', { class: 'btn small ghost', text: 'Clear', onclick: () => { const l = copy(); l[qi].correct = null; commit(l); } }))));
@@ -144,7 +149,7 @@
         roundPills(qRound, (id) => { qRound = id; render(true); }, (r) => r.questions.length > 0),
         cards.length ? cards : el('p', { class: 'muted', text: 'No questions for this round yet. Add one to use the on-screen question presentation.' }),
         el('button', { class: 'btn small', text: '+ Add question', onclick: () => {
-          const l = copy(); l.push({ text: '', options: ['', '', '', ''], correct: null });
+          const l = copy(); l.push({ text: '', options: ['', '', '', ''], correct: null, media: '' });
           pendingFocus = `q${l.length - 1}`; commit(l);
         } })),
       el('p', { class: 'muted', text: 'Use ◀ ▶ (or arrow keys / Space) in the bar at the bottom to step through: leaderboard → question → question + options → leaderboard → …' }));

@@ -127,6 +127,37 @@
   }
   setInterval(() => { if (state) { statWindow++; renderStats(true); } }, 9000);
 
+  // ---- answer media (image/GIF or YouTube) covers the leaderboard while the answer is revealed ----
+  let shownMedia = null, mediaTimer;
+  function setMedia(m) {
+    const src = m ? m.src : null;
+    if (src === shownMedia) return;
+    shownMedia = src;
+    const pane = $('mediapane'), stage = $('stage');
+    clearTimeout(mediaTimer);
+    if (!m) {
+      stage.classList.remove('with-media');
+      // Keep the content until the slide-out finishes, then drop it (this also stops any video).
+      mediaTimer = setTimeout(() => pane.replaceChildren(), 900);
+      return;
+    }
+    let node;
+    if (m.kind === 'youtube') {
+      node = el('iframe');
+      node.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      node.referrerPolicy = 'strict-origin-when-cross-origin';
+      node.src = m.src;
+    } else {
+      node = el('img');
+      node.alt = '';
+      node.onerror = () => { if (shownMedia === src) { shownMedia = null; stage.classList.remove('with-media'); } };
+      node.src = m.src;
+    }
+    node.classList.add('media-item');
+    pane.replaceChildren(node);
+    stage.classList.add('with-media');
+  }
+
   // ---- questions + rules ----------------------------------------------------------
   function renderQuestion() {
     const cur = L.currentQuestion(state);
@@ -156,9 +187,11 @@
       panel.classList.toggle('reveal', reveal);
       if (reveal && !lastReveal) playReveal();
       lastReveal = reveal;
+      setMedia(reveal ? L.parseMedia(cur.question.media) : null);
     } else {
       lastStepKey = null; lastReveal = false;
       panel.classList.remove('show-opts', 'reveal');
+      setMedia(null);
     }
     // Compact mode changes how many stat cards fit.
     renderStats(false);

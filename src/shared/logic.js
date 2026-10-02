@@ -38,13 +38,40 @@
   function validQuestion(x) {
     return isObj(x) && typeof x.text === 'string' && Array.isArray(x.options) && x.options.length === 4 &&
       x.options.every((o) => typeof o === 'string') &&
+      (x.media === undefined || typeof x.media === 'string') &&
       (x.correct === null || x.correct === undefined || (Number.isInteger(x.correct) && x.correct >= 0 && x.correct <= 3));
   }
   const cleanQuestion = (x) => ({
     text: x.text.trim(),
     options: x.options.map((o) => o.trim()),
     correct: x.correct === undefined ? null : x.correct,
+    media: (x.media || '').trim(),
   });
+
+  // Answer media: an https image/GIF URL or a YouTube link. Returns { kind: 'image' | 'youtube', src } or null if unusable.
+  const IMAGE_RE = /\.(png|jpe?g|gif|webp|avif|svg)$/i;
+  const YT_ID = /^[\w-]{11}$/;
+  function parseMedia(input) {
+    if (typeof input !== 'string' || !input.trim()) return null;
+    let u;
+    try { u = new URL(input.trim()); } catch (e) { return null; }
+    if (u.protocol !== 'https:') return null;
+    const host = u.hostname.toLowerCase().replace(/^(www|m)\./, '');
+    let id = null;
+    if (host === 'youtu.be') id = u.pathname.slice(1).split('/')[0];
+    else if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+      const m = u.pathname.match(/^\/(?:embed|shorts|live|v)\/([^/]+)/);
+      id = m ? m[1] : u.pathname === '/watch' ? u.searchParams.get('v') : null;
+    }
+    if (id !== null) {
+      if (!YT_ID.test(id)) return null;
+      const q = new URLSearchParams({ autoplay: '1', rel: '0', playsinline: '1' });
+      const t = parseInt(u.searchParams.get('t') || u.searchParams.get('start') || '', 10);
+      if (t > 0) q.set('start', String(t));
+      return { kind: 'youtube', src: `https://www.youtube-nocookie.com/embed/${id}?${q}` };
+    }
+    return IMAGE_RE.test(u.pathname) ? { kind: 'image', src: input.trim() } : null;
+  }
 
   // Validate arbitrary (e.g. loaded from disk) data; fill optional fields. Throws on bad shape.
   function normalizeState(obj) {
@@ -295,5 +322,5 @@
     return { roundWinners, biggestClimber, bestWorst, leadChanges, gap, woodenSpoon };
   }
 
-  return { DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, scoredRounds };
+  return { DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, parseMedia, scoredRounds };
 });
