@@ -19,7 +19,7 @@ test('written questions: validated, normalised, no options step', () => {
   let s = quiz();
   const rid = s.rounds[0].id;
   s = L.reduce(s, { type: 'setQuestions', roundId: rid, questions: [tq('  Capital of France? ', ' Paris '), q('B', 1)] });
-  assert.deepEqual(s.rounds[0].questions[0], { type: 'text', text: 'Capital of France?', options: [], correct: null, answer: 'Paris' });
+  assert.deepEqual(s.rounds[0].questions[0], { type: 'text', text: 'Capital of France?', options: [], correct: null, answer: 'Paris', media: '' });
   assert.equal(s.rounds[0].questions[1].type, 'choice');
   assert.deepEqual(L.presentationSteps(s).map((x) => x.type), ['board', 'question', 'board', 'question', 'options', 'board']);
   assert.equal(L.reduce(s, { type: 'setQuestions', roundId: rid, questions: [{ type: 'essay', text: 'x' }] }), s);
@@ -110,4 +110,15 @@ test('penalty/bonus effects are switchable and presets treat them sensibly', () 
   assert.deepEqual(keys.map((k) => E.PRESETS.minimal.flags[k]), [true, false, false]); // the reason is information, so it stays
   assert.ok(keys.every((k) => !E.PRESETS.off.flags[k]));
   assert.ok(E.htmlClasses({ flags: { ...E.PRESETS.off.flags } }).length > 0);
+});
+
+test('answer media works on both question types; a written question with only media can be revealed', () => {
+  let s = quiz();
+  s = L.reduce(s, { type: 'setQuestions', roundId: s.rounds[0].id, questions: [
+    { type: 'text', text: 'Who is this?', media: ' https://example.com/a.gif ' }, { ...q('B', 1), media: 'https://youtu.be/dQw4w9WgXcQ' }] });
+  assert.equal(s.rounds[0].questions[0].media, 'https://example.com/a.gif');
+  assert.equal(s.rounds[0].questions[1].media, 'https://youtu.be/dQw4w9WgXcQ');
+  assert.equal(L.reduce(s, { type: 'setQuestions', roundId: s.rounds[0].id, questions: [{ ...q('x'), media: 5 }] }), s);
+  s = L.reduce(L.reduce(s, { type: 'presentNext' }), { type: 'presentReveal' });
+  assert.equal(s.presentation.revealAnswer, true);
 });

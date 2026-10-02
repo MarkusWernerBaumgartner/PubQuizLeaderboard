@@ -109,17 +109,17 @@
       "settle": 1200
     },
     {
+      "shot": "admin-branding",
+      "window": "admin",
+      "width": 1500
+    },
+    {
       "open": "admin",
       "section": "effects",
       "settle": 1200
     },
     {
       "shot": "admin-effects",
-      "window": "admin",
-      "width": 1500
-    },
-    {
-      "shot": "admin-branding",
       "window": "admin",
       "width": 1500
     }

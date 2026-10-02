@@ -37,6 +37,8 @@ Start the night with an animated rules screen (fully editable), then flip a swit
 ### 🎨 Make it yours in 30 seconds
 Your name, your logo, your colours, your window icon: all from the **Branding** tab, applied live to every screen. Save the result as a preset and swap identities for different events.
 
+<img src="docs/media/admin-branding.png" alt="The Branding settings tab" width="100%">
+
 <img src="docs/media/theming.gif" alt="The theme changing live" width="100%">
 
 ### 🎚️ Dial it up or down
@@ -45,7 +47,7 @@ Not every venue wants confetti. Every animation, banner and celebration has its 
 <img src="docs/media/admin-effects.png" alt="The Effects settings tab" width="100%">
 
 ### 🛟 Built so you can't lose the night
-Every score is saved the instant you type it, so closing the window or pulling the plug loses nothing. Optionally autosave to a file of your choice (a USB stick, a synced folder), with a live status chip so you can see it working.
+Every score is saved the instant you type it, so closing the window or pulling the plug loses nothing. Use **Data → Save quiz as…** (or **Load quiz…**) and every change is also autosaved to a file of your choice (a USB stick, a synced folder), with a live status chip showing when it last saved, or a red warning if the file can't be written.
 
 ---
 
@@ -63,8 +65,6 @@ Every score is saved the instant you type it, so closing the window or pulling t
 <img src="docs/media/leaderboard-question.png" alt="Leaderboard with a question and revealed answer" width="100%">
 <img src="docs/media/rules.png" alt="Rules screen" width="100%">
 <img src="docs/media/admin-questions.png" alt="Question editor" width="100%">
-<img src="docs/media/admin-branding.png" alt="Branding settings" width="100%">
-
 </details>
 
 ## 🚀 Quick start

@@ -42,16 +42,42 @@
   function validQuestion(x) {
     if (!isObj(x) || typeof x.text !== 'string') return false;
     if (x.type !== undefined && x.type !== 'choice' && x.type !== 'text') return false;
+    if (x.media !== undefined && typeof x.media !== 'string') return false;
     if (x.type === 'text') return x.answer === undefined || x.answer === null || typeof x.answer === 'string';
     return Array.isArray(x.options) && x.options.length === 4 && x.options.every((o) => typeof o === 'string') &&
       (x.correct === null || x.correct === undefined || (Number.isInteger(x.correct) && x.correct >= 0 && x.correct <= 3));
   }
   const cleanQuestion = (x) => x.type === 'text'
-    ? { type: 'text', text: x.text.trim(), options: [], correct: null, answer: str(x.answer) }
-    : { type: 'choice', text: x.text.trim(), options: x.options.map((o) => o.trim()), correct: x.correct === undefined ? null : x.correct };
-  // Does this question have something to reveal?
-  const hasAnswer = (q) => !!q && (isText(q) ? q.answer !== '' && q.answer != null : q.correct != null);
+    ? { type: 'text', text: x.text.trim(), options: [], correct: null, answer: str(x.answer), media: str(x.media) }
+    : { type: 'choice', text: x.text.trim(), options: x.options.map((o) => o.trim()), correct: x.correct === undefined ? null : x.correct, media: str(x.media) };
+  // Does this question have something to reveal? (written: a model answer or answer media)
+  const hasAnswer = (q) => !!q && (isText(q) ? !!(q.answer || q.media) : q.correct != null);
   const adjKind = (a) => (a.points > 0 ? 'bonus' : 'penalty');
+
+  // Answer media: an https image/GIF URL or a YouTube link. Returns { kind: 'image' | 'youtube', src } or null if unusable.
+  const IMAGE_RE = /\.(png|jpe?g|gif|webp|avif|svg)$/i;
+  const YT_ID = /^[\w-]{11}$/;
+  function parseMedia(input) {
+    if (typeof input !== 'string' || !input.trim()) return null;
+    let u;
+    try { u = new URL(input.trim()); } catch (e) { return null; }
+    if (u.protocol !== 'https:') return null;
+    const host = u.hostname.toLowerCase().replace(/^(www|m)\./, '');
+    let id = null;
+    if (host === 'youtu.be') id = u.pathname.slice(1).split('/')[0];
+    else if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+      const m = u.pathname.match(/^\/(?:embed|shorts|live|v)\/([^/]+)/);
+      id = m ? m[1] : u.pathname === '/watch' ? u.searchParams.get('v') : null;
+    }
+    if (id !== null) {
+      if (!YT_ID.test(id)) return null;
+      const q = new URLSearchParams({ autoplay: '1', rel: '0', playsinline: '1' });
+      const t = parseInt(u.searchParams.get('t') || u.searchParams.get('start') || '', 10);
+      if (t > 0) q.set('start', String(t));
+      return { kind: 'youtube', src: `https://www.youtube-nocookie.com/embed/${id}?${q}` };
+    }
+    return IMAGE_RE.test(u.pathname) ? { kind: 'image', src: input.trim() } : null;
+  }
 
   // Validate arbitrary (e.g. loaded from disk) data; fill optional fields. Throws on bad shape.
   function normalizeState(obj) {
@@ -335,5 +361,5 @@
     return { roundWinners, biggestClimber, bestWorst, leadChanges, gap, woodenSpoon };
   }
 
-  return { DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, scoredRounds, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
+  return { DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, parseMedia, scoredRounds, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
 });

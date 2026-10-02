@@ -24,10 +24,24 @@ For each round you can add questions of two kinds (use **+ Multiple choice** / *
 - **Multiple choice** – the question text and exactly four options (A–D). Tick the radio button next to the correct option if you want to use **Reveal answer**.
 - **Written answer** – just the question text, plus an optional model answer that appears when you press **Reveal answer**. Teams write their answers on paper; there is no options step for these.
 
-Questions are shown on the big screen as a slideshow (see below).
+Questions are shown on the big screen as a slideshow (see below). Optionally add **Answer media** to either kind of question: an `https://` link to an image or GIF (`.png .jpg .gif .webp …`) or a YouTube link. When you press **Reveal answer** the media slides in from the left over the leaderboard (YouTube videos autoplay), with the answer panel still visible on the right; it closes again when you un-reveal or move on. Needs an internet connection.
 
 ### Teams tab
 Add teams one at a time (type a name and press Enter) or paste a list, one name per line. Names must be unique (case-insensitive). Each team gets a colour automatically. Removing a team that has scores asks for confirmation.
+
+### Branding tab: make it yours
+Put your event's identity on every screen. Open **Admin → ⚙ Branding** (or the *Branding settings* link on the launcher); changes apply live to all open windows.
+
+![Branding tab](media/admin-branding.png)
+
+- **Identity** – the app/event name (launcher and window titles) and the **default quiz title** used for new and reset quizzes.
+- **Images** – a **crest/logo** (Launcher, Leaderboard header, rules screen), an optional wide **wordmark** (launcher and rules screen) and the **window icon**. Use *Use default* or *Remove* to go back.
+- **Colours** – background, lines and buttons, four accents, text and muted text. The tab warns about low contrast; a projector washes colours out, so favour strong contrast.
+- **Presets** – *Export preset…* saves your identity to a folder, *Import preset…* loads one, so you can swap identities between events. *Reset to default* restores the neutral theme.
+
+Branding is stored separately from the quiz, so *Reset everything* never touches it. All the details (colour tokens, preset format) are in [Branding](branding.md).
+
+![The theme changing live](media/theming.gif)
 
 ## During the night
 
@@ -59,7 +73,9 @@ Turn on **Rules** (header of the Rules tab or the bottom bar) before you begin. 
 
 ## Animations and celebrations
 
-Confetti, banners, pulses, sliding bars and the other motion are all optional. Open **Admin → ✨ Effects**, pick a preset (Party, Calm, Minimal, Off) or switch individual effects, and use the Preview buttons to try a celebration on the Leaderboard. See [Animations, celebrations & popups](effects.md) for the full list.
+Confetti, banners, pulses, sliding bars and the other motion are all optional. Open **Admin → ✨ Effects**, pick a preset (Party, Calm, Minimal, Off) or switch individual effects, and use the Preview buttons to try a celebration on the Leaderboard. The confetti amount is adjustable, and by default the app also follows your computer's "reduce motion" setting. Error messages and "are you sure?" confirmations are always shown. Settings are per computer and are kept when you reset or load a quiz. See [Animations, celebrations & popups](effects.md) for the full list.
+
+![Effects tab](media/admin-effects.png)
 
 ## What the Leaderboard shows
 
@@ -111,4 +127,6 @@ To try things out, load [`examples/sample-quiz.json`](../examples/sample-quiz.js
 
 - Do a dry run: load the sample quiz, open the Leaderboard on the projector, and enter a few scores.
 - Keep the Admin window on your laptop and the Leaderboard fullscreen on the projector; the two never need to be on the same screen.
-- Use *Branding* (see [Branding](branding.md)) to put your event's name and logo on the big screen.
+- Set up *Branding* first (see above), then save it as a preset to reuse next time.
+- If the venue dislikes flashing or noise, choose the **Calm** or **Minimal** effects preset before the night.
+- For a safety copy, use **Save quiz as…** to a USB stick or synced folder and check that the Admin chip stays green.

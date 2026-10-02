@@ -123,7 +123,14 @@
     const qs = round.questions;
     const commit = (list) => dispatch({ type: 'setQuestions', roundId: round.id, questions: list });
     const copy = () => qs.map((q) => ({ ...q, options: q.options.slice() }));
-    const blank = (type) => (type === 'text' ? { type: 'text', text: '', answer: '' } : { type: 'choice', text: '', options: ['', '', '', ''], correct: null });
+    const mediaRow = (q, qi) => [
+      el('div', { class: 'row', style: 'margin-top:.5rem' },
+        el('span', { class: 'muted', text: '🖼 Answer media' }),
+        (() => { const inp = el('input', { type: 'text', class: 'grow', placeholder: 'Optional: image/GIF URL (https://….gif) or YouTube link – shown when the answer is revealed', 'data-key': `q${qi}media`,
+          onchange: (e) => { const l = copy(); l[qi].media = e.target.value; commit(l); } }); inp.value = q.media || ''; return inp; })()),
+      q.media ? el('div', { class: 'muted', style: 'margin-top:.25rem', text: (() => { const m = L.parseMedia(q.media); return m ? (m.kind === 'youtube' ? '✓ YouTube video – plays on reveal' : '✓ Image – shown on reveal') : '⚠ Not recognised: use an https:// link to an image/GIF (.png .jpg .gif .webp …) or a YouTube video'; })() }) : null,
+    ];
+    const blank = (type) => (type === 'text' ? { type: 'text', text: '', answer: '', media: '' } : { type: 'choice', text: '', options: ['', '', '', ''], correct: null, media: '' });
     const cards = qs.map((q, qi) => el('div', { class: 'q-card' },
       el('div', { class: 'row' },
         el('b', { class: 'muted', text: 'Q' + (qi + 1) }),
@@ -139,6 +146,7 @@
         ? [el('div', { class: 'q-opt' }, el('span', { class: 'letter', text: '✎' }),
             (() => { const inp = el('input', { type: 'text', placeholder: 'Model answer (optional – shown on "Reveal answer")', 'data-key': `q${qi}ans`,
               onchange: (e) => { const l = copy(); l[qi].answer = e.target.value; commit(l); } }); inp.value = q.answer || ''; return inp; })()),
+          ...mediaRow(q, qi),
           el('div', { class: 'row muted', style: 'margin-top:.5rem', text: 'Teams write their answer down – nothing but the question is shown on screen until you reveal.' })]
         : [...q.options.map((o, oi) => el('div', { class: 'q-opt' },
             el('span', { class: 'letter', text: 'ABCD'[oi] }),
@@ -146,6 +154,7 @@
               onchange: (e) => { const l = copy(); l[qi].options[oi] = e.target.value; commit(l); } }); inp.value = o; return inp; })(),
             el('input', { type: 'radio', name: 'correct' + qi, title: 'Mark as correct answer', checked: q.correct === oi,
               onclick: () => { const l = copy(); l[qi].correct = oi; commit(l); } }))),
+          ...mediaRow(q, qi),
           el('div', { class: 'row muted', style: 'margin-top:.5rem' },
             el('span', { text: q.correct == null ? 'No correct answer set (optional – needed for "Reveal answer")' : `Correct answer: ${'ABCD'[q.correct]}` }),
             q.correct == null ? null : el('button', { class: 'btn small ghost', text: 'Clear', onclick: () => { const l = copy(); l[qi].correct = null; commit(l); } }))]));
