@@ -5,6 +5,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Edit mode** switch in the Questions tab: turn it off during the quiz to lock every question control so nothing is changed by accident (remembered per computer).
+- **Question presentation** switches in the Effects tab, saved with the quiz: go straight from question to question instead of returning to the leaderboard each time, and/or show multiple-choice questions together with their options in one step instead of question first, options second. Changing them keeps you on the same question.
+
+### Changed
+- The default colour scheme is now navy blue (previously indigo): background, panels, lines, muted text and the default crest. Saved custom branding is unaffected.
+
+### Fixed
+- The Confetti amount dropdown in the Effects tab was stretched tall.
+
 ## [1.2.0] - 2026-10-02
 
 ### Added

@@ -19,6 +19,8 @@ Set the quiz **title** (shown on the Leaderboard) and the **rounds**: how many, 
 Edit the list of rules shown on the big screen. Add rules with the input at the bottom, reorder with ▲▼, remove with ✕. The **Show rules** switch (also available as the *Rules* button in the bottom bar) covers the Leaderboard with an animated rules screen; turn it off to reveal the scoreboard. A fresh quiz starts with rules showing.
 
 ### Questions tab (optional)
+The **Edit mode** switch at the top locks all question controls when turned off, so nothing gets changed by accident while you present. It is remembered on this computer and is on by default.
+
 For each round you can add questions of two kinds (use **+ Multiple choice** / **+ Written answer**, or switch a question's type with the buttons under its text):
 
 - **Multiple choice** – the question text and exactly four options (A–D). Tick the radio button next to the correct option if you want to use **Reveal answer**.
@@ -61,6 +63,8 @@ The bar at the bottom of Admin steps through the questions like a slideshow:
 `board → question → question + options → board → next question …`
 
 (Written-answer questions skip the options step: `board → question → board → …`.)
+
+The flow is configurable under **Effects → Question presentation** (saved with the quiz): switch off *Return to the leaderboard between questions* to go straight from question to question (the leaderboard still appears after the last one), and/or switch off *Show the question first, then the options* to show each multiple-choice question together with its options in one step.
 
 Use **Prev / Next**, the arrow keys, or Space (when no text box is focused). The dots show your position; click one to jump. On a question step the Leaderboard slides the scoreboard into the left two-thirds and shows the question on the right; the next step reveals the four options. **Reveal answer** highlights the correct option, or, for a written question, shows the model answer on the question step. The Leaderboard window also accepts ← → Space PageUp PageDown if you want to drive it directly.
 

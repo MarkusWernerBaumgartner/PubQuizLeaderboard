@@ -7,6 +7,8 @@
   let selRound = null;   // round shown in the Scoring tab
   let qRound = null;     // round shown in the Questions tab
   let pendingFocus = null;
+  let editQuestions = true;   // Questions tab: false locks every editing control (this admin window only)
+  try { editQuestions = localStorage.getItem('admin.editQuestions') !== 'off'; } catch (e) { /* ignore */ }
   let lastMainKey = null;
   let adjDraft = { teamId: null, points: '', reason: '' };   // survives re-renders while typing
   try { section = sessionStorage.getItem('admin.section') || section; } catch (e) { /* ignore */ }
@@ -117,6 +119,12 @@
       class: 'pill' + (r.id === current ? ' on' : ''), text: (mark && mark(r) ? '✓ ' : '') + r.name, onclick: () => onPick(r.id) })));
   }
 
+  function setEditMode(on) {
+    editQuestions = on;
+    try { localStorage.setItem('admin.editQuestions', on ? 'on' : 'off'); } catch (e) { /* ignore */ }
+    render(true);
+  }
+
   function buildQuestions() {
     if (!state.rounds.some((r) => r.id === qRound)) qRound = state.rounds[0].id;
     const round = state.rounds.find((r) => r.id === qRound);
@@ -158,14 +166,26 @@
           el('div', { class: 'row muted', style: 'margin-top:.5rem' },
             el('span', { text: q.correct == null ? 'No correct answer set (optional – needed for "Reveal answer")' : `Correct answer: ${'ABCD'[q.correct]}` }),
             q.correct == null ? null : el('button', { class: 'btn small ghost', text: 'Clear', onclick: () => { const l = copy(); l[qi].correct = null; commit(l); } }))]));
-    return el('div', { class: 'panel' },
+    const editSwitch = el('div', { class: 'fx-row' },
+      el('div', { class: 'switch' + (editQuestions ? ' on' : ''), role: 'switch', tabindex: 0, 'aria-checked': String(editQuestions), 'aria-label': 'Edit mode', 'data-key': 'edit-switch',
+        onclick: () => setEditMode(!editQuestions),
+        onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditMode(!editQuestions); } } }),
+      el('div', {}, el('b', { text: editQuestions ? 'Edit mode: on' : '🔒 Edit mode: off (questions are locked)' }),
+        el('div', { class: 'muted', text: editQuestions ? 'Turn off during the quiz so nothing gets changed by accident.' : 'Turn on to change, add, move or delete questions.' })));
+    const panel = el('div', { class: 'panel' },
+      el('div', { class: 'card' }, editSwitch),
       el('div', { class: 'card' }, el('h2', { text: 'Questions by round' }),
         roundPills(qRound, (id) => { qRound = id; render(true); }, (r) => r.questions.length > 0),
         cards.length ? cards : el('p', { class: 'muted', text: 'No questions for this round yet. Add one to use the on-screen question presentation.' }),
         el('div', { class: 'row' },
-          el('button', { class: 'btn small', text: '+ Multiple choice', onclick: () => { const l = copy(); l.push(blank('choice')); pendingFocus = `q${l.length - 1}`; commit(l); } }),
-          el('button', { class: 'btn small', text: '+ Written answer', onclick: () => { const l = copy(); l.push(blank('text')); pendingFocus = `q${l.length - 1}`; commit(l); } }))),
-      el('p', { class: 'muted', text: 'Use ◀ ▶ (or arrow keys / Space) in the bar at the bottom to step through: leaderboard → question → question + options (multiple choice only) → leaderboard → …' }));
+          el('button', { class: 'btn small add-q', text: '+ Multiple choice', onclick: () => { const l = copy(); l.push(blank('choice')); pendingFocus = `q${l.length - 1}`; commit(l); } }),
+          el('button', { class: 'btn small add-q', text: '+ Written answer', onclick: () => { const l = copy(); l.push(blank('text')); pendingFocus = `q${l.length - 1}`; commit(l); } }))),
+      el('p', { class: 'muted', text: 'Use ◀ ▶ (or arrow keys / Space) in the bar at the bottom to step through the questions (see the Effects tab → Question presentation to change the flow). Default: leaderboard → question → question + options → leaderboard → …' }));
+    if (!editQuestions) {
+      for (const n of panel.querySelectorAll('.q-card input, .q-card button, .q-card textarea')) { if (n.type === 'text') n.readOnly = true; else n.disabled = true; }
+      for (const n of panel.querySelectorAll('.add-q')) n.disabled = true;
+    }
+    return panel;
   }
 
   function buildTeams() {
@@ -258,7 +278,7 @@
       el('button', { class: 'icon del', text: '✕', title: 'Remove this adjustment', onclick: () => dispatch({ type: 'removeAdjustment', id: a.id }) })));
     return el('div', { class: 'card' }, el('h2', { text: 'Penalties & bonuses' }),
       el('p', { class: 'muted', text: 'Applied to a team’s total on top of the round scores. The big screen announces each one with its reason.' }),
-      el('div', { class: 'row' }, pick, pts, why),
+      el('div', { class: 'row adj-form' }, pick, pts, why),
       el('div', { class: 'row' },
         el('button', { class: 'btn small coral', text: '🚨 Penalty', onclick: () => apply(-1) }),
         el('button', { class: 'btn small gold', text: '🎁 Bonus', onclick: () => apply(1) })),
@@ -289,6 +309,13 @@
         onclick: () => set({ flags: { [f.key]: !s.flags[f.key] } }),
         onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set({ flags: { [f.key]: !s.flags[f.key] } }); } } }),
       el('div', {}, el('b', { text: f.label }), el('div', { class: 'muted', text: f.hint })));
+    const flowRow = (key, label, hint) => {
+      const on = state.flow[key], toggle = () => dispatch({ type: 'setFlow', flow: { [key]: !on } });
+      return el('div', { class: 'fx-row' },
+        el('div', { class: 'switch' + (on ? ' on' : ''), role: 'switch', tabindex: 0, 'aria-checked': String(on), 'aria-label': label,
+          onclick: toggle, onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } } }),
+        el('div', {}, el('b', { text: label }), el('div', { class: 'muted', text: hint })));
+    };
     const previews = el('div', { class: 'row', style: 'margin-top:.8rem' }, el('span', { class: 'muted', text: 'Preview on the Leaderboard:' }),
       FX.PREVIEWS.map((p) => el('button', { class: 'btn small', text: '▶ ' + p.label, onclick: async () => {
         if (!PREVIEW_FLAGS[p.kind].some((k) => s.flags[k])) { toast('Nothing to preview – those effects are switched off'); return; }
@@ -303,6 +330,10 @@
           el('label', { class: 'row', style: 'margin:1.4rem 0 0 1rem;gap:.5rem' }, follow, el('span', { text: "Respect my computer's “reduce motion” setting" })))),
       FX.GROUPS.map((g) => el('div', { class: 'card' }, el('h2', { text: g.label }), el('div', { class: 'muted', style: 'margin:-.4rem 0 .6rem', text: g.blurb }),
         FX.FLAGS.filter((f) => f.group === g.id).map(flagRow), g.id === 'celebrations' ? previews : null)),
+      el('div', { class: 'card' }, el('h2', { text: 'Question presentation' }),
+        el('div', { class: 'muted', style: 'margin:-.4rem 0 .6rem', text: 'How the ◀ ▶ slideshow steps through questions. Saved with the quiz; you stay on the same question when you change these.' }),
+        flowRow('returnToBoard', 'Return to the leaderboard between questions', 'Off: go straight from one question to the next; the leaderboard shows again after the last question'),
+        flowRow('splitOptions', 'Show the question first, then the options', 'Off: multiple-choice questions appear together with their options (written questions are unaffected)')),
       el('div', { class: 'card' }, el('button', { class: 'btn small coral', text: 'Reset to defaults (Party)', onclick: () => Q.resetSettings() })));
   }
 
@@ -418,7 +449,7 @@
     $('head-title').textContent = state.title;
     $('nav').replaceChildren(...SECTIONS.map(([k, label]) => el('button', { class: k === section ? 'on' : '', text: label, onclick: () => go(k) })));
     $('undo').disabled = state.history.length === 0;
-    const key = section + '|' + JSON.stringify({ ...state, presentation: null }) + '|' + selRound + '|' + qRound + '|' + (brand ? JSON.stringify(brand.branding) : '') + '|' + (fx ? JSON.stringify(fx.effects) : '');
+    const key = section + '|' + JSON.stringify({ ...state, presentation: null }) + '|' + selRound + '|' + qRound + '|' + editQuestions + '|' + (brand ? JSON.stringify(brand.branding) : '') + '|' + (fx ? JSON.stringify(fx.effects) : '');
     if (force || key !== lastMainKey) {
       lastMainKey = key;
       withFocusKept(() => $('main').replaceChildren(BUILDERS[section]()));

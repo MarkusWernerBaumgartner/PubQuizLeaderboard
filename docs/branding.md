@@ -43,9 +43,9 @@ A **preset** is a folder containing `branding.json` and the image files it names
   "appName": "My Pub Quiz",
   "defaultTitle": "Friday Quiz Night",
   "colours": {
-    "bg": "#1a1b4b", "bgDeep": "#0c0d2b", "bgMid": "#2d2f7a", "line": "#4c54c9",
+    "bg": "#002147", "bgDeep": "#00122b", "bgMid": "#0b3a75", "line": "#1a5aa8",
     "accent1": "#ffc83d", "accent2": "#ff6b6b", "accent3": "#4ecdc4", "accent4": "#a78bfa",
-    "text": "#f6f8ff", "muted": "#a9b0e0"
+    "text": "#f6f8ff", "muted": "#9db4d8"
   },
   "images": { "crest": "crest.png", "wordmark": "wordmark.png", "icon": "icon.png" }
 }

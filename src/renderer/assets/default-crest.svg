@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="Trophy badge">
   <g transform="translate(20 6)">
-    <path d="M20 14 H180 V118 C180 172 142 206 100 226 C58 206 20 172 20 118 Z" fill="#4c54c9" stroke="#f6f8ff" stroke-width="7" stroke-linejoin="round"/>
-    <path d="M32 26 H168 V116 C168 164 136 194 100 212 C64 194 32 164 32 116 Z" fill="#1a1b4b"/>
+    <path d="M20 14 H180 V118 C180 172 142 206 100 226 C58 206 20 172 20 118 Z" fill="#1a5aa8" stroke="#f6f8ff" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M32 26 H168 V116 C168 164 136 194 100 212 C64 194 32 164 32 116 Z" fill="#002147"/>
     <g fill="#ffc83d" stroke="#ffc83d" stroke-width="3" stroke-linejoin="round">
       <path d="M66 52 H134 V92 C134 114 119 126 100 126 C81 126 66 114 66 92 Z"/>
       <path d="M66 62 H50 C50 88 58 98 72 102" fill="none" stroke-width="7" stroke-linecap="round"/>
@@ -9,6 +9,6 @@
       <rect x="93" y="126" width="14" height="24" stroke="none"/>
       <rect x="72" y="150" width="56" height="14" rx="5" stroke="none"/>
     </g>
-    <path d="M100 66 l6 13 14 1.5 -10.500 9.500 3 14 -12.500 -7.500 -12.500 7.500 3 -14 -10.500 -9.500 14 -1.500 Z" fill="#1a1b4b"/>
+    <path d="M100 66 l6 13 14 1.5 -10.500 9.500 3 14 -12.500 -7.500 -12.500 7.500 3 -14 -10.500 -9.500 14 -1.500 Z" fill="#002147"/>
   </g>
 </svg>
