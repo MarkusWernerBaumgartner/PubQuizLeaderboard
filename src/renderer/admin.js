@@ -389,6 +389,9 @@
       el('button', { class: 'btn gold', text: 'Next ▶', disabled: i >= steps.length - 1, onclick: () => dispatch({ type: 'presentNext' }) }),
       el('button', { class: 'btn small ' + (state.presentation.revealAnswer ? 'coral' : ''), disabled: !canReveal,
         text: state.presentation.revealAnswer ? 'Hide answer' : 'Reveal answer', onclick: () => dispatch({ type: 'presentReveal' }) }),
+      el('button', { class: 'btn small ' + (state.presentation.autoReveal ? 'gold' : 'ghost'), title: 'Answer reveal mode (R): answers are shown as soon as you reach them – handy when grading a round',
+        text: state.presentation.autoReveal ? '✅ Answer reveal mode: ON' : '✅ Answer reveal mode: off',
+        onclick: () => dispatch({ type: 'setAutoReveal', on: !state.presentation.autoReveal }) }),
     ];
   }
 
@@ -468,6 +471,7 @@
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || !$('modal').hidden) return;
     if (e.key === 'ArrowRight' || (e.key === ' ' && tag !== 'BUTTON')) { e.preventDefault(); dispatch({ type: 'presentNext' }); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); dispatch({ type: 'presentPrev' }); }
+    else if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); dispatch({ type: 'setAutoReveal', on: !state.presentation.autoReveal }); }
   });
 
   Q.onChange((s) => { state = s; render(false); });
