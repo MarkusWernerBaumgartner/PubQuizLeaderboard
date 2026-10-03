@@ -219,3 +219,29 @@ test('reducer does not mutate input and ignores unknown actions', () => {
   assert.equal(JSON.stringify(s), frozen);
   assert.equal(L.reduce(s, { type: 'whatever' }), s);
 });
+
+test('answer reveal mode shows answers on arrival and persists', () => {
+  let s = quiz({ rounds: 1 });
+  s = L.reduce(s, { type: 'setQuestions', roundId: s.rounds[0].id, questions: [q('A', 1), q('B', 2)] });
+  assert.equal(s.presentation.autoReveal, false);
+  s = L.reduce(s, { type: 'presentGoto', step: 2 }); // options step of question 1
+  assert.equal(s.presentation.revealAnswer, false, 'off by default');
+  s = L.reduce(s, { type: 'setAutoReveal', on: true });
+  assert.equal(s.presentation.revealAnswer, true, 'turning on reveals the current answer');
+  assert.equal(L.reduce(s, { type: 'setAutoReveal', on: true }), s, 'no-op when unchanged');
+  s = L.reduce(s, { type: 'presentPrev' });
+  assert.equal(s.presentation.revealAnswer, false, 'question-only step has nothing to reveal');
+  s = L.reduce(s, { type: 'presentNext' });
+  assert.equal(s.presentation.revealAnswer, true, 'next arrival reveals immediately');
+  s = L.reduce(s, { type: 'presentGoto', step: 5 }); // options step of question 2 (a board follows each question)
+  assert.equal(s.presentation.revealAnswer, true, 'goto too');
+  s = L.reduce(s, { type: 'presentReveal' });
+  assert.equal(s.presentation.revealAnswer, false, 'manual hide still works');
+  const loaded = L.reduce(L.defaultState(), { type: 'load', state: JSON.parse(JSON.stringify(s)) });
+  assert.equal(loaded.presentation.autoReveal, true, 'survives save/load');
+  s = L.reduce(s, { type: 'setAutoReveal', on: false });
+  assert.equal(s.presentation.revealAnswer, false, 'turning off hides');
+  s = L.reduce(s, { type: 'presentPrev' });
+  s = L.reduce(s, { type: 'presentNext' });
+  assert.equal(s.presentation.revealAnswer, false);
+});

@@ -30,7 +30,7 @@
       teams: [],
       adjustments: [],
       rules: { items: DEFAULT_RULES.slice(), visible: true },
-      presentation: { step: 0, revealAnswer: false },
+      presentation: { step: 0, revealAnswer: false, autoReveal: false },
       history: [],
       nextId: 6,
     };
@@ -115,7 +115,11 @@
       : typeof h.teamId === 'string' && typeof h.roundId === 'string')) : [];
     const state = {
       version: 1, title: obj.title, rounds, teams, adjustments, rules,
-      presentation: { step: Number.isInteger(obj.presentation && obj.presentation.step) ? obj.presentation.step : 0, revealAnswer: false },
+      presentation: {
+        step: Number.isInteger(obj.presentation && obj.presentation.step) ? obj.presentation.step : 0,
+        autoReveal: !!(obj.presentation && obj.presentation.autoReveal),
+        revealAnswer: !!(obj.presentation && obj.presentation.autoReveal),
+      },
       history, nextId: Math.max(maxN + 1, Number.isInteger(obj.nextId) ? obj.nextId : 0),
     };
     return clampPresentation(state);
@@ -286,7 +290,15 @@
         step = Math.min(Math.max(step, 0), max);
         if (step === state.presentation.step) return state;
         s.presentation.step = step;
-        s.presentation.revealAnswer = false;
+        // Answer reveal mode: arriving on a revealable step shows the answer straight away.
+        s.presentation.revealAnswer = !!s.presentation.autoReveal && canReveal(currentQuestion(s));
+        return s;
+      }
+      case 'setAutoReveal': {
+        const on = !!action.on;
+        if (!!s.presentation.autoReveal === on) return state;
+        s.presentation.autoReveal = on;
+        s.presentation.revealAnswer = on && canReveal(currentQuestion(s));
         return s;
       }
       case 'presentReveal': {

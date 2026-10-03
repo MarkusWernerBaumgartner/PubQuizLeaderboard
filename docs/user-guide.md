@@ -64,6 +64,8 @@ The bar at the bottom of Admin steps through the questions like a slideshow:
 
 Use **Prev / Next**, the arrow keys, or Space (when no text box is focused). The dots show your position; click one to jump. On a question step the Leaderboard slides the scoreboard into the left two-thirds and shows the question on the right; the next step reveals the four options. **Reveal answer** highlights the correct option, or, for a written question, shows the model answer on the question step. The Leaderboard window also accepts ← → Space PageUp PageDown if you want to drive it directly.
 
+**Answer reveal mode** (the *Answer reveal mode* button in the bottom bar, or press `R` when no text box is focused) makes every answer appear the moment you reach it: the options step of a multiple-choice question, or the question step of a written one. It is meant for grading a round: switch it on and flick through the questions. **Reveal answer** still hides or shows the current answer by hand, and the mode is saved with the quiz.
+
 ![Question slideshow](media/question-slideshow.gif)
 
 ### Starting the night with the rules

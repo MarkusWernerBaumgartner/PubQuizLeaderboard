@@ -5,6 +5,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Answer reveal mode**: a toggle in the Presentation bar (or press `R`) that shows each answer as soon as you reach it while flicking through questions, handy when grading a round. **Reveal answer** still hides/shows manually. The setting is saved with the quiz.
+
 ## [1.2.0] - 2026-10-02
 
 ### Added
