@@ -58,9 +58,16 @@ function createWindow(kind, opts = {}) {
   });
   win.webContents.on('before-input-event', (event, input) => {
     if (input.type !== 'keyDown') return;
+    if ((input.control || input.meta) && !input.alt) {
+      const z = settings.getZoom(kind);
+      if (input.key === '+' || input.key === '=') { settings.setZoom(kind, z + 0.1); event.preventDefault(); return; }
+      if (input.key === '-' || input.key === '_') { settings.setZoom(kind, z - 0.1); event.preventDefault(); return; }
+      if (input.key === '0') { settings.setZoom(kind, 1); event.preventDefault(); return; }
+    }
     if (input.key === 'F11') { setFs(win, !isFs(win)); event.preventDefault(); }
     else if (input.key === 'Escape' && isFs(win)) { setFs(win, false); event.preventDefault(); }
   });
+  win.webContents.on('did-finish-load', () => win.webContents.setZoomFactor(settings.getZoom(kind)));
   win.on('closed', () => { delete windows[kind]; });
   return win;
 }
@@ -90,7 +97,8 @@ app.whenReady().then(() => {
   });
   branding = new BrandingStore(app.getPath('userData'));
   settings = new SettingsStore(app.getPath('userData'));
-  settings.on('change', (v) => { for (const w of BrowserWindow.getAllWindows()) if (!w.isDestroyed()) w.webContents.send('settings:changed', v); });
+  const applyZoom = () => { for (const [kind, w] of Object.entries(windows)) if (w && !w.isDestroyed()) w.webContents.setZoomFactor(settings.getZoom(kind)); };
+  settings.on('change', (v) => { applyZoom(); for (const w of BrowserWindow.getAllWindows()) if (!w.isDestroyed()) w.webContents.send('settings:changed', v); });
   store = new Store(app.getPath('userData'), () => branding.getDefaultTitle());
   store.on('change', broadcast);
   store.on('save', (status) => { for (const w of BrowserWindow.getAllWindows()) if (!w.isDestroyed()) w.webContents.send('save:changed', status); });
@@ -118,6 +126,7 @@ app.whenReady().then(() => {
   // ---- settings (animations / effects) ----
   ipcMain.handle('settings:get', () => settings.get());
   ipcMain.handle('settings:set', (_e, patch) => { settings.setEffects(patch || {}); return settings.get(); });
+  ipcMain.handle('zoom:set', (_e, kind, factor) => { settings.setZoom(kind, factor); return settings.get(); });
   ipcMain.handle('settings:preset', (_e, name) => { settings.applyPreset(name); return settings.get(); });
   ipcMain.handle('settings:reset', () => { settings.reset(); return settings.get(); });
   ipcMain.handle('effects:preview', (_e, kind) => {

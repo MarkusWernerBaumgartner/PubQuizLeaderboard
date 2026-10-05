@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- **Zoom**: Ctrl `+` / `−` / `0` (⌘ on Mac) zooms the focused window like a web page, and Settings → Screen size has − / + / Reset for the Leaderboard, Admin and Launcher. Saved per window on this computer, so a big screen can be bigger than the Admin laptop.
 - **Coming up strip in Present mode**: the next steps by round and question number or section header (never any question or answer text), colour coded: purple leaderboard, teal section page, blue question, gold "answer on Reveal", coral "answer shows" (Answer reveal mode). Pills say how many steps until the next leaderboard and the next answer and whether it shows by itself. Click a chip to jump there.
 
 ### Changed

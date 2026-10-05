@@ -37,6 +37,7 @@ contextBridge.exposeInMainWorld('quiz', {
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
   applyEffectsPreset: (name) => ipcRenderer.invoke('settings:preset', name),
+  setZoom: (kind, factor) => ipcRenderer.invoke('zoom:set', kind, factor),
   resetSettings: () => ipcRenderer.invoke('settings:reset'),
   previewEffect: (kind) => ipcRenderer.invoke('effects:preview', kind),
   onSettingsChange: (cb) => {

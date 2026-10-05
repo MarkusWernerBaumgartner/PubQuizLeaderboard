@@ -346,7 +346,19 @@
         const r = await Q.previewEffect(p.kind);
         if (!r.delivered) toast('Open the Leaderboard window to see the preview');
       } })));
+    const zoomRow = (kind, label) => {
+      const z = (fx.zoom && fx.zoom[kind]) || 1;
+      return el('div', { class: 'row', style: 'gap:.5rem;margin:.3rem 0' },
+        el('b', { text: label, style: 'width:9rem' }),
+        el('button', { class: 'btn small', text: '−', 'aria-label': label + ' smaller', onclick: () => Q.setZoom(kind, z - 0.1) }),
+        el('span', { text: Math.round(z * 100) + '%', style: 'min-width:3.5rem;text-align:center;font-weight:800' }),
+        el('button', { class: 'btn small', text: '+', 'aria-label': label + ' larger', onclick: () => Q.setZoom(kind, z + 0.1) }),
+        el('button', { class: 'btn small ghost', text: 'Reset', onclick: () => Q.setZoom(kind, 1) }));
+    };
     return el('div', { class: 'panel' },
+      el('div', { class: 'card' }, el('h2', { text: 'Screen size' }),
+        el('div', { class: 'muted', style: 'margin:-.4rem 0 .6rem', text: 'Zoom each window like a web page. Also Ctrl + / Ctrl − / Ctrl 0 (⌘ on Mac) while a window is focused. Saved on this computer.' }),
+        zoomRow('leaderboard', 'Leaderboard'), zoomRow('admin', 'Admin'), zoomRow('launcher', 'Launcher')),
       el('div', { class: 'card' }, el('h2', { text: 'Animations & celebrations' }),
         el('p', { class: 'muted', text: 'Pick a preset, then fine-tune individual effects. Changes apply instantly on every screen. Error messages and "are you sure?" confirmations are always shown.' }),
         presetRow,

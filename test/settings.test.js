@@ -54,3 +54,20 @@ test('an unwritable settings location never throws; the change still applies in 
   assert.doesNotThrow(() => s.setEffects({ flags: { 'scores.pulse': false } }));
   assert.equal(s.get().effects.flags['scores.pulse'], false);
 });
+
+test('zoom is clamped, persisted per window, and bad values fall back to 100%', () => {
+  const dir = tmp();
+  const s = new SettingsStore(dir);
+  assert.equal(s.getZoom('leaderboard'), 1);
+  s.setZoom('leaderboard', 1.25);
+  s.setZoom('admin', 99);
+  s.setZoom('nope', 2);
+  assert.equal(s.getZoom('admin'), 3);
+  const again = new SettingsStore(dir);
+  assert.equal(again.getZoom('leaderboard'), 1.25);
+  assert.equal(again.getZoom('launcher'), 1);
+  fs.writeFileSync(path.join(dir, 'settings.json'), '{"zoom":{"admin":"big","leaderboard":0.01}}');
+  const bad = new SettingsStore(dir);
+  assert.equal(bad.getZoom('admin'), 1);
+  assert.equal(bad.getZoom('leaderboard'), 0.5);
+});

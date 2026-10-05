@@ -8,7 +8,7 @@ This guide walks through running a quiz night from first launch to final scores.
 - **Admin** – where you configure and score the quiz. Everything you change appears on the Leaderboard immediately.
 - **Leaderboard** – the audience-facing display. It needs no interaction; you drive it from Admin.
 
-Both windows belong to the same running app, so there is no server or network setup. **F11** toggles fullscreen in any window and **Esc** leaves fullscreen.
+Both windows belong to the same running app, so there is no server or network setup. **F11** toggles fullscreen in any window and **Esc** leaves fullscreen. **Ctrl +** / **Ctrl −** / **Ctrl 0** (⌘ on Mac) zoom the focused window in, out and back to 100%; Settings → *Screen size* does the same for each window (handy for making the Leaderboard bigger on a large screen). Zoom is saved per window on this computer.
 
 ## Before the night: set up
 
