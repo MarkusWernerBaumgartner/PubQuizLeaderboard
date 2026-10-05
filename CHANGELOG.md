@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- **Local answer images**: answer media can also be an image file on this computer (a `file:///…` link ending in `.png .jpg .gif .webp …`), e.g. from an extracted quiz folder. Other local file types and network file shares stay blocked.
 - **Skip to a question**: every card in the Questions tab has a **▶ Q1** button that jumps the big screen straight to that question (clearing the Home page or rules if they are showing). It still works with Edit mode switched off.
 
 ### Changed

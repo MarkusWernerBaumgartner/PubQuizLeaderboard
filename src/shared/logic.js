@@ -74,6 +74,11 @@
     if (typeof input !== 'string' || !input.trim()) return null;
     let u;
     try { u = new URL(input.trim()); } catch (e) { return null; }
+    // Local answer images in an extracted quiz folder. Other local file types stay blocked.
+    if (u.protocol === 'file:') {
+      if (u.hostname && u.hostname !== 'localhost') return null;
+      return IMAGE_RE.test(u.pathname) ? { kind: 'image', src: u.href } : null;
+    }
     if (u.protocol !== 'https:') return null;
     const host = u.hostname.toLowerCase().replace(/^(www|m)\./, '');
     let id = null;
