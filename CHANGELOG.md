@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-10-05
+
 ### Added
 - **Section pages**: an option in the Questions tab that adds a full-screen page with the round's name before each round, in normal and Answer reveal mode. It is a safe stop when flicking through answers: nothing is revealed on it, so you cannot run on into the next round's answers by accident. Shown as a teal marker in the step bar.
 - **Answer reveal mode without the leaderboard**: an option in the Questions tab that, only while Answer reveal mode is on, goes straight from one question to the next instead of returning to the leaderboard between them. Other modes are unaffected, and switching reveal mode keeps the same question on screen.
@@ -89,7 +91,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Configurable branding: name, default title, colours, crest, wordmark and window icon, with preset import/export.
 - Sample quiz in `examples/sample-quiz.json`.
 
-[Unreleased]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.0.0...v1.1.0
