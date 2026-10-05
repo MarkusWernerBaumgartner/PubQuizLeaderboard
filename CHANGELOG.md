@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-05
+
 ### Added
 - **Home page**: a full-screen logo and title page for the start of the night (🏠 Home in the bottom bar, or `H`), with the same entrance and wobble animations as the launcher and drifting background shapes. It sits above the rules and the board, uses your branding, and follows the "Launcher intro" and crest-wobble effect switches.
 - **Presenter notes**: an optional private note on every question (Questions tab). It pops up on the Admin screen (and in Present mode) when you reveal the answer, and is never shown on the Leaderboard.
@@ -73,7 +75,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Configurable branding: name, default title, colours, crest, wordmark and window icon, with preset import/export.
 - Sample quiz in `examples/sample-quiz.json`.
 
-[Unreleased]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/releases/tag/v1.0.0
