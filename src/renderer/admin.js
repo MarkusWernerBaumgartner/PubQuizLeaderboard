@@ -127,6 +127,16 @@
     render(true);
   }
 
+  // Skip straight to a question: clear anything covering the board, then jump to that question's first step.
+  async function showQuestion(roundId, qi) {
+    const step = L.presentationSteps(state).findIndex((s) => s.roundId === roundId && s.qIndex === qi);
+    if (step < 0) return;
+    if (state.home.visible) await dispatch({ type: 'setHomeVisible', visible: false });
+    if (state.rules.visible) await dispatch({ type: 'setRulesVisible', visible: false });
+    await dispatch({ type: 'presentGoto', step });
+    toast(`Showing question ${qi + 1} on the big screen`, true);
+  }
+
   function buildQuestions() {
     if (!state.rounds.some((r) => r.id === qRound)) qRound = state.rounds[0].id;
     const round = state.rounds.find((r) => r.id === qRound);
@@ -138,7 +148,7 @@
         el('span', { class: 'muted', text: '🖼 Answer media' }),
         (() => { const inp = el('input', { type: 'text', class: 'grow', placeholder: 'Optional: image/GIF URL (https://….gif) or YouTube link – shown when the answer is revealed', 'data-key': `q${qi}media`,
           onchange: (e) => { const l = copy(); l[qi].media = e.target.value; commit(l); } }); inp.value = q.media || ''; return inp; })()),
-      q.media ? el('div', { class: 'muted', style: 'margin-top:.25rem', text: (() => { const m = L.parseMedia(q.media); return m ? (m.kind === 'youtube' ? '✓ YouTube video – plays on reveal' : '✓ Image – shown on reveal') : '⚠ Not recognised: use an https:// link to an image/GIF (.png .jpg .gif .webp …) or a YouTube video'; })() }) : null,
+      q.media ? el('div', { class: 'muted', style: 'margin-top:.25rem', text: (() => { const m = L.parseMedia(q.media); return m ? (m.kind === 'youtube' ? '✓ YouTube video – plays on reveal' : '✓ Image – shown on reveal') : '⚠ Not recognised: use a file:// or https:// image/GIF link (.png .jpg .gif .webp …), or a YouTube video'; })() }) : null,
     ];
     const notesRow = (q, qi) => el('div', { class: 'row', style: 'margin-top:.5rem; align-items:flex-start' },
       el('span', { class: 'muted', text: '🗒 Presenter notes' }),
@@ -148,7 +158,7 @@
     const blank = (type) => (type === 'text' ? { type: 'text', text: '', answer: '', media: '', notes: '' } : { type: 'choice', text: '', options: ['', '', '', ''], correct: null, media: '', notes: '' });
     const cards = qs.map((q, qi) => el('div', { class: 'q-card' },
       el('div', { class: 'row' },
-        el('b', { class: 'muted', text: 'Q' + (qi + 1) }),
+        el('button', { class: 'btn small go-q', text: '▶ Q' + (qi + 1), title: 'Skip straight to this question on the big screen', onclick: () => showQuestion(round.id, qi) }),
         (() => { const inp = el('input', { type: 'text', class: 'grow', placeholder: 'Question text', 'data-key': `q${qi}`,
           onchange: (e) => { const l = copy(); l[qi].text = e.target.value; commit(l); } }); inp.value = q.text; return inp; })(),
         el('button', { class: 'icon', text: '▲', disabled: qi === 0, onclick: () => { const l = copy(); [l[qi - 1], l[qi]] = [l[qi], l[qi - 1]]; commit(l); } }),
@@ -191,7 +201,7 @@
           el('button', { class: 'btn small add-q', text: '+ Written answer', onclick: () => { const l = copy(); l.push(blank('text')); pendingFocus = `q${l.length - 1}`; commit(l); } }))),
       el('p', { class: 'muted', text: 'Use ◀ ▶ (or arrow keys / Space) in the bar at the bottom to step through the questions (see the Effects tab → Question presentation to change the flow). Default: leaderboard → question → question + options → leaderboard → …' }));
     if (!editQuestions) {
-      for (const n of panel.querySelectorAll('.q-card input, .q-card button, .q-card textarea')) { if (n.type === 'text') n.readOnly = true; else n.disabled = true; }
+      for (const n of panel.querySelectorAll('.q-card input, .q-card button, .q-card textarea')) { if (n.classList.contains('go-q')) continue; if (n.type === 'text') n.readOnly = true; else n.disabled = true; }
       for (const n of panel.querySelectorAll('.add-q')) n.disabled = true;
     }
     return panel;

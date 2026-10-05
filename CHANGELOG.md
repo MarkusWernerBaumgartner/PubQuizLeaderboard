@@ -5,6 +5,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Skip to a question**: every card in the Questions tab has a **▶ Q1** button that jumps the big screen straight to that question (clearing the Home page or rules if they are showing). It still works with Edit mode switched off.
+
 ### Changed
 - **Rules are paged**: the rules screen shows 5 rules per page ("Page 1 of 2") so they are bigger and never run off the screen; text still shrinks to fit a crowded page. Page buttons in the bottom bar and `[` / `]` switch pages; the page is saved with the quiz.
 - Present mode no longer shows the answer to the host (only the question); the answer still appears for everyone on reveal.
