@@ -11,6 +11,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **Question timer**: a countdown (default 45 s, set per quiz, 5–600 s) that appears on the Leaderboard, turns amber then red in the last 10 and 5 seconds, and ends with "Time!". Start/stop it from Present mode with **Space**; moving to another step stops it.
 - **Present mode** (🎬 Present button or `P`): a full-window Admin layer with huge Prev / Timer / Next / Reveal buttons, the current question and answer, and easy keys (Space, →/Enter, ←/Backspace, `A`, `R`, `H`, Esc), all listed on screen in a shortcut cheat-sheet (`?` hides or shows it).
 - **Answer reveal mode**: a toggle in the Presentation bar (or press `R`) that shows each answer as soon as you reach it while flicking through questions, handy when grading a round. **Reveal answer** still hides/shows manually. The setting is saved with the quiz.
+- **Edit mode** switch in the Questions tab: turn it off during the quiz to lock every question control so nothing is changed by accident (remembered per computer).
+- **Question presentation** switches in the Effects tab, saved with the quiz: go straight from question to question instead of returning to the leaderboard each time, and/or show multiple-choice questions together with their options in one step instead of question first, options second. Changing them keeps you on the same question.
+
+### Changed
+- The default colour scheme is now navy blue (previously indigo): background, panels, lines, muted text and the default crest. Saved custom branding is unaffected.
+
+### Fixed
+- The Confetti amount dropdown in the Effects tab was stretched tall.
 
 ## [1.2.0] - 2026-10-02
 

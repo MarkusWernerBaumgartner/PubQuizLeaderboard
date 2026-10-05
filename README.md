@@ -6,7 +6,7 @@
 Score from your laptop, watch the leaderboard race, confetti and all, on the big screen.
 
 [![CI](https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/actions/workflows/ci.yml/badge.svg)](https://github.com/MarkusWernerBaumgartner/PubQuizLeaderboard/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/github/package-json/v/MarkusWernerBaumgartner/PubQuizLeaderboard?label=version&color=4c54c9)](CHANGELOG.md)
+[![Version](https://img.shields.io/github/package-json/v/MarkusWernerBaumgartner/PubQuizLeaderboard?label=version&color=1a5aa8)](CHANGELOG.md)
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-4ecdc4.svg)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20macOS-ffc83d)
 ![Electron](https://img.shields.io/badge/built%20with-Electron-a78bfa)

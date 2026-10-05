@@ -51,16 +51,17 @@ If the reducer rejects an action (invalid score, duplicate team name, …) it re
   rules:    { items: string[], visible: boolean },
   home: { visible: boolean },   // full-screen logo/title page, above the rules
   presentation: { step: number, revealAnswer: boolean, autoReveal: boolean, timerSeconds: number },
+  flow:     { returnToBoard: boolean, splitOptions: boolean },   // how the slideshow is stepped (both default true)
   history:  [{ teamId, roundId, prev, next } | { adjId }],   // for undo, capped at 500
   nextId }
 ```
 
-Actions: `setTitle`, `setRounds`, `addTeam`, `renameTeam`, `removeTeam`, `setScore`, `addAdjustment`, `removeAdjustment`, `undo`, `clearScores`, `resetAll`, `setRules`, `setRulesVisible`, `setQuestions`, `presentNext`, `presentPrev`, `presentGoto`, `presentReveal`, `load`.
+Actions: `setTitle`, `setRounds`, `addTeam`, `renameTeam`, `removeTeam`, `setScore`, `setFlow`, `addAdjustment`, `removeAdjustment`, `undo`, `clearScores`, `resetAll`, `setRules`, `setRulesVisible`, `setHomeVisible`, `setQuestions`, `presentNext`, `presentPrev`, `presentGoto`, `presentReveal`, `setAutoReveal`, `setTimerSeconds`, `load`.
 
 `normalizeState` validates anything read from disk or a loaded file and fills in optional fields; bad shapes are rejected without touching the current state.
 
 ### Presentation steps
-`presentationSteps(state)` derives the slideshow from the rounds' questions: `[board, Q1, Q1+options, board, Q2, Q2+options, board, …]` (written questions have no options step). `canReveal` says whether Reveal applies: on the options step for multiple choice, on the question step for written answers, only if an answer is set. `presentation.step` indexes into it and is clamped whenever rounds or questions change.
+`presentationSteps(state)` derives the slideshow from the rounds' questions: `[board, Q1, Q1+options, board, Q2, Q2+options, board, …]` (written questions have no options step). With `state.flow` the board steps between questions can be dropped (one stays at the end) and the question/options pair can be merged into a single `options` step; `setFlow` keeps the same question on screen. `canReveal` says whether Reveal applies: on the options step for multiple choice, on the question step for written answers, only if an answer is set. `presentation.step` indexes into it and is clamped whenever rounds or questions change.
 
 ### Standings and stats
 `standings` ranks teams with competition ranking (ties share a rank) and computes each team's rank change relative to the standings before the most recent scored round. `stats` derives round winners, biggest climber, best/worst round per team, lead changes (counting only unique leaders), the gap at the top and the wooden spoon.

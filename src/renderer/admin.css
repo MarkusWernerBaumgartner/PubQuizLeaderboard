@@ -126,7 +126,7 @@ footer .dots i.on { background: var(--accent-1); transform: scale(1.5); }
 .savechip.warn { color: #2b0a0a; background: var(--accent-2); border-color: var(--accent-2); }
 
 /* Penalties & bonuses, written-answer questions */
-.row select { width: auto; flex: 0 1 14rem; }
+.adj-form select { width: auto; flex: 0 1 14rem; }
 .pills.small { margin: .6rem 0 .2rem; }
 .pills.small .pill { font-size: .8rem; padding: .2em .8em; }
 .row.adj { padding: .3rem .7rem; border-radius: 12px; background: rgba(0,0,0,.15); margin-bottom: .35rem; }
