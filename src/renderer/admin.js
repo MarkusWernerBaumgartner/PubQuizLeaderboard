@@ -127,6 +127,15 @@
     render(true);
   }
 
+  // A labelled on/off switch for one presentation-flow option (Questions and Effects tabs).
+  const flowRow = (key, label, hint) => {
+    const on = state.flow[key], toggle = () => dispatch({ type: 'setFlow', flow: { [key]: !on } });
+    return el('div', { class: 'fx-row' },
+      el('div', { class: 'switch' + (on ? ' on' : ''), role: 'switch', tabindex: 0, 'aria-checked': String(on), 'aria-label': label,
+        onclick: toggle, onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } } }),
+      el('div', {}, el('b', { text: label }), el('div', { class: 'muted', text: hint })));
+  };
+
   // Skip straight to a question: clear anything covering the board, then jump to that question's first step.
   async function showQuestion(roundId, qi) {
     const step = L.presentationSteps(state).findIndex((s) => s.roundId === roundId && s.qIndex === qi);
@@ -193,6 +202,9 @@
         el('div', { class: 'muted', text: editQuestions ? 'Turn off during the quiz so nothing gets changed by accident.' : 'Turn on to change, add, move or delete questions.' })));
     const panel = el('div', { class: 'panel' },
       el('div', { class: 'card' }, editSwitch),
+      el('div', { class: 'card' }, el('h2', { text: 'Presentation options' }),
+        flowRow('sectionPages', 'Section page before each round', 'A full-screen page with the round name before its first question, in normal and Answer reveal mode. A safe stop when flicking through answers: nothing is revealed on it, so you cannot run into the next round by accident'),
+        flowRow('revealNoBoard', 'Answer reveal mode: don\'t return to the leaderboard', 'Only while Answer reveal mode is on: go straight from one question\'s answer to the next question instead of via the leaderboard (other modes are unaffected)')),
       el('div', { class: 'card' }, el('h2', { text: 'Questions by round' }),
         roundPills(qRound, (id) => { qRound = id; render(true); }, (r) => r.questions.length > 0),
         cards.length ? cards : el('p', { class: 'muted', text: 'No questions for this round yet. Add one to use the on-screen question presentation.' }),
@@ -328,13 +340,6 @@
         onclick: () => set({ flags: { [f.key]: !s.flags[f.key] } }),
         onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set({ flags: { [f.key]: !s.flags[f.key] } }); } } }),
       el('div', {}, el('b', { text: f.label }), el('div', { class: 'muted', text: f.hint })));
-    const flowRow = (key, label, hint) => {
-      const on = state.flow[key], toggle = () => dispatch({ type: 'setFlow', flow: { [key]: !on } });
-      return el('div', { class: 'fx-row' },
-        el('div', { class: 'switch' + (on ? ' on' : ''), role: 'switch', tabindex: 0, 'aria-checked': String(on), 'aria-label': label,
-          onclick: toggle, onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } } }),
-        el('div', {}, el('b', { text: label }), el('div', { class: 'muted', text: hint })));
-    };
     const previews = el('div', { class: 'row', style: 'margin-top:.8rem' }, el('span', { class: 'muted', text: 'Preview on the Leaderboard:' }),
       FX.PREVIEWS.map((p) => el('button', { class: 'btn small', text: '▶ ' + p.label, onclick: async () => {
         if (!PREVIEW_FLAGS[p.kind].some((k) => s.flags[k])) { toast('Nothing to preview – those effects are switched off'); return; }
@@ -420,6 +425,7 @@
   function describeStep(step) {
     if (step.type === 'board') return 'Leaderboard only';
     const round = state.rounds.find((r) => r.id === step.roundId);
+    if (step.type === 'section') return `Section page – ${round.name}`;
     const label = `${round.name} · Q${step.qIndex + 1}`;
     return step.type === 'question' ? `${label} – question` : `${label} – question + options`;
   }
@@ -437,7 +443,7 @@
     const i = state.presentation.step;
     const cur = L.currentQuestion(state);
     const canReveal = L.canReveal(cur);
-    const dots = el('div', { class: 'dots' }, steps.map((s, j) => el('i', { class: (s.type === 'board' ? 'board ' : '') + (j === i ? 'on' : ''), title: describeStep(s),
+    const dots = el('div', { class: 'dots' }, steps.map((s, j) => el('i', { class: (s.type === 'board' ? 'board ' : '') + (s.type === 'section' ? 'section ' : '') + (j === i ? 'on' : ''), title: describeStep(s),
       onclick: () => dispatch({ type: 'presentGoto', step: j }) })));
     return [
       el('button', { class: 'btn small ' + (state.home.visible ? 'gold' : 'ghost'), text: state.home.visible ? '🏠 Home: ON' : '🏠 Home: off',
@@ -568,7 +574,7 @@
     const steps = L.presentationSteps(state), i = state.presentation.step, cur = L.currentQuestion(state);
     pm.step.textContent = describeStep(steps[i]);
     pm.sub.textContent = steps.length > 1 ? `Step ${i + 1} of ${steps.length}` : 'No questions yet – add some in the Questions tab';
-    pm.qtext.textContent = cur ? (cur.question.text || '…') : '';
+    pm.qtext.textContent = cur ? (cur.question.text || '…') : steps[i].type === 'section' ? `📄 Section page – ${describeStep(steps[i]).replace('Section page – ', '')}\nNothing is revealed here. Press Next to start the round.` : '';
     pm.prev.disabled = i === 0;
     pm.next.disabled = i >= steps.length - 1;
     pm.reveal.disabled = !L.canReveal(cur);

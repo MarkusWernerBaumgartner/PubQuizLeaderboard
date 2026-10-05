@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- **Section pages**: an option in the Questions tab that adds a full-screen page with the round's name before each round, in normal and Answer reveal mode. It is a safe stop when flicking through answers: nothing is revealed on it, so you cannot run on into the next round's answers by accident. Shown as a teal marker in the step bar.
+- **Answer reveal mode without the leaderboard**: an option in the Questions tab that, only while Answer reveal mode is on, goes straight from one question to the next instead of returning to the leaderboard between them. Other modes are unaffected, and switching reveal mode keeps the same question on screen.
 - **Local answer images**: answer media can also be an image file on this computer (a `file:///…` link ending in `.png .jpg .gif .webp …`), e.g. from an extracted quiz folder. Other local file types and network file shares stay blocked.
 - **Skip to a question**: every card in the Questions tab has a **▶ Q1** button that jumps the big screen straight to that question (clearing the Home page or rules if they are showing). It still works with Edit mode switched off.
 

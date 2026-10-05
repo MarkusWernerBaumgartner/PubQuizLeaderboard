@@ -68,6 +68,7 @@ footer .step-info b { font-family: var(--display); font-size: 1.1rem; color: var
 footer .dots { display: flex; gap: 3px; justify-content: center; margin-top: 4px; max-width: 520px; flex-wrap: wrap; }
 footer .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); cursor: pointer; }
 footer .dots i.board { background: color-mix(in srgb, var(--line) 55%, var(--bg-deep)); border-radius: 3px; }
+footer .dots i.section { background: var(--accent-3); border-radius: 2px; }
 footer .dots i.on { background: var(--accent-1); transform: scale(1.5); }
 
 /* Present mode: a full-window layer with big controls for running the questions. */
@@ -78,6 +79,7 @@ footer .dots i.on { background: var(--accent-1); transform: scale(1.5); }
 #pm .pm-step { font: 600 1.4rem var(--display); color: var(--accent-1); }
 #pm .pm-sub { color: var(--muted); font-weight: 800; }
 #pm .pm-q { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; justify-content: center; gap: 1rem; text-align: center; }
+#pm .pm-qtext { white-space: pre-line; }
 #pm .pm-qtext { font: 700 clamp(1.8rem, 4.5vw, 3.6rem)/1.15 var(--display); }
 #pm .pm-timer { font: 700 clamp(5rem, 16vw, 11rem)/1 var(--display); text-align: center; font-variant-numeric: tabular-nums; color: var(--muted); }
 #pm .pm-timer.run { color: var(--accent-3); }

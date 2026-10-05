@@ -24,8 +24,14 @@
   const str = (v) => (typeof v === 'string' ? v.trim() : '');
 
   // How the slideshow is stepped: back to the leaderboard between questions, and question text before the options.
-  const defaultFlow = () => ({ returnToBoard: true, splitOptions: true });
-  const cleanFlow = (f) => ({ returnToBoard: !isObj(f) || f.returnToBoard !== false, splitOptions: !isObj(f) || f.splitOptions !== false });
+  // How the slideshow is stepped. returnToBoard/splitOptions default on; revealNoBoard (drop the leaderboard steps between
+  // questions, only while Answer reveal mode is on) and sectionPages (a title page before each round) default off.
+  const defaultFlow = () => ({ returnToBoard: true, splitOptions: true, revealNoBoard: false, sectionPages: false });
+  const cleanFlow = (f) => ({
+    returnToBoard: !isObj(f) || f.returnToBoard !== false, splitOptions: !isObj(f) || f.splitOptions !== false,
+    revealNoBoard: isObj(f) && f.revealNoBoard === true, sectionPages: isObj(f) && f.sectionPages === true,
+  });
+  const sameFlow = (a, b) => Object.keys(a).every((k) => a[k] === b[k]);
 
   // opts.title seeds the quiz title (the host's configured default); falls back to DEFAULT_TITLE.
   function defaultState(opts) {
@@ -148,10 +154,13 @@
   // ---- presentation -------------------------------------------------------
   // Multiple choice: [question] → [question + options] (or one combined step when splitOptions is off).
   // Written: just [question]. Between questions: a leaderboard step, unless returnToBoard is off (one is always kept at the end).
+  // sectionPages adds a { type: 'section', roundId } page before each round that has questions.
   function presentationSteps(state) {
     const flow = cleanFlow(state.flow);
+    if (flow.revealNoBoard && state.presentation && state.presentation.autoReveal) flow.returnToBoard = false;
     const steps = [{ type: 'board' }];
     for (const round of state.rounds) {
+      if (flow.sectionPages && (round.questions || []).length) steps.push({ type: 'section', roundId: round.id });
       (round.questions || []).forEach((q, qIndex) => {
         const at = { roundId: round.id, qIndex };
         if (isText(q)) steps.push({ type: 'question', ...at });
@@ -163,9 +172,10 @@
     if (!flow.returnToBoard && steps.length > 1) steps.push({ type: 'board' });
     return steps;
   }
+  const currentStep = (state) => presentationSteps(state)[state.presentation.step] || null;
   function currentQuestion(state) {
-    const step = presentationSteps(state)[state.presentation.step];
-    if (!step || step.type === 'board') return null;
+    const step = currentStep(state);
+    if (!step || step.type === 'board' || step.type === 'section') return null;
     const round = state.rounds.find((r) => r.id === step.roundId);
     return round ? { step, round, question: round.questions[step.qIndex] } : null;
   }
@@ -175,6 +185,30 @@
     return cur.step.type === (isText(cur.question) ? 'question' : 'options');
   }
   // Mutates (callers pass a clone). Keeps the step in range and drops stale reveal state.
+  // After the step list changes shape, find where `old` (a step from the previous list) now is: the same step if it
+  // still exists, else that question's / round's first step, else the board that followed the same question.
+  function relocateStep(oldSteps, oldIndex, newSteps) {
+    const old = oldSteps[oldIndex];
+    if (!old) return oldIndex;
+    const same = (a, b) => a.type === b.type && a.roundId === b.roundId && a.qIndex === b.qIndex;
+    let i = newSteps.findIndex((x) => same(x, old));
+    if (i >= 0) return i;
+    if (old.type === 'board') {
+      let j = oldIndex - 1;
+      while (j >= 0 && (oldSteps[j].type === 'board' || oldSteps[j].type === 'section')) j--;
+      if (j < 0) return 0;
+      const prev = oldSteps[j];
+      let at = -1;
+      newSteps.forEach((x, k) => { if (x.roundId === prev.roundId && x.qIndex === prev.qIndex) at = k; });
+      if (at < 0) return oldIndex;
+      const nextBoard = newSteps.findIndex((x, k) => k > at && x.type === 'board');
+      return nextBoard >= 0 ? nextBoard : at;
+    }
+    i = old.qIndex === undefined ? -1 : newSteps.findIndex((x) => x.roundId === old.roundId && x.qIndex === old.qIndex);
+    if (i < 0) i = newSteps.findIndex((x) => x.roundId === old.roundId && x.type !== 'section');
+    return i >= 0 ? i : oldIndex;
+  }
+
   function clampPresentation(s) {
     const max = presentationSteps(s).length - 1;
     const step = Math.min(Math.max(s.presentation.step | 0, 0), max);
@@ -290,16 +324,11 @@
       // Presentation flow switches; keeps showing the same question afterwards.
       case 'setFlow': {
         const flow = cleanFlow({ ...s.flow, ...(isObj(action.flow) ? action.flow : {}) });
-        if (flow.returnToBoard === s.flow.returnToBoard && flow.splitOptions === s.flow.splitOptions) return state;
-        const old = presentationSteps(s)[s.presentation.step];
+        if (sameFlow(flow, cleanFlow(s.flow))) return state;
+        const before = presentationSteps(s), index = s.presentation.step;
         s.flow = flow;
-        const steps = presentationSteps(s);
-        let i = old && old.type !== 'board'
-          ? steps.findIndex((x) => x.roundId === old.roundId && x.qIndex === old.qIndex && x.type === old.type)
-          : -1;
-        if (i < 0 && old && old.type !== 'board') i = steps.findIndex((x) => x.roundId === old.roundId && x.qIndex === old.qIndex);
-        if (i >= 0) s.presentation.step = i;
-        s.presentation.revealAnswer = false;
+        s.presentation.step = relocateStep(before, index, presentationSteps(s));
+        s.presentation.revealAnswer = !!s.presentation.autoReveal && canReveal(currentQuestion(s));
         return clampPresentation(s);
       }
       case 'resetAll':
@@ -348,7 +377,9 @@
       case 'setAutoReveal': {
         const on = !!action.on;
         if (!!s.presentation.autoReveal === on) return state;
+        const before = presentationSteps(s), index = s.presentation.step;
         s.presentation.autoReveal = on;
+        s.presentation.step = relocateStep(before, index, presentationSteps(s));   // reveal mode can drop the board steps
         s.presentation.revealAnswer = on && canReveal(currentQuestion(s));
         return s;
       }
@@ -431,5 +462,5 @@
     return { roundWinners, biggestClimber, bestWorst, leadChanges, gap, woodenSpoon };
   }
 
-  return { RULES_PER_PAGE, rulesPageCount, DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, parseMedia, scoredRounds, defaultFlow, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
+  return { RULES_PER_PAGE, rulesPageCount, DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentStep, currentQuestion, parseMedia, scoredRounds, defaultFlow, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
 });

@@ -30,6 +30,13 @@ For each round you can add questions of two kinds (use **+ Multiple choice** / *
 
 Questions are shown on the big screen as a slideshow (see below). To skip straight to one, press the **▶ Q1** button at the start of its card: the Leaderboard jumps to that question (hiding the Home page or rules if they were showing). It keeps working when Edit mode is off. Optionally add **Answer media** to either kind of question: an `https://` link to an image or GIF (`.png .jpg .gif .webp …`), a `file:///…` link to an image file on this computer, or a YouTube link. When you press **Reveal answer** the media slides in from the left over the leaderboard (YouTube videos autoplay), with the answer panel still visible on the right; it closes again when you un-reveal or move on. Needs an internet connection.
 
+**Presentation options** (top of the Questions tab):
+
+- **Section page before each round** adds a full-screen page with the round's name (and its question count) before the round's first question, in normal and Answer reveal mode. It is a deliberate stop: nothing is ever revealed on it, so when you flick through answers in Answer reveal mode you pause at each round boundary instead of running straight into the next round's answers. Press Next to start the round.
+- **Answer reveal mode: don't return to the leaderboard** drops the leaderboard steps between questions, but only while Answer reveal mode is on. Normal presenting keeps its usual flow (and the Effects tab's *Return to the leaderboard between questions* switch still applies there).
+
+Switching either option keeps you on the same question.
+
 **Presenter notes** – every question (either kind) has an optional **🗒 Presenter notes** box for things only you should see: a source, a fun fact, a follow-up. When you reveal the answer the notes pop up on the Admin screen (and in present mode), and they go away when you hide the answer or move on. They are never shown on the Leaderboard.
 
 ### Teams tab

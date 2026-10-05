@@ -31,6 +31,13 @@
     { "eval": "document.getElementById('home').classList.contains('on')", "window": "leaderboard", "equals": true },
     { "shot": "leaderboard-home", "window": "leaderboard" },
     { "dispatch": { "type": "setHomeVisible", "visible": false } },
+    { "dispatch": { "type": "setFlow", "flow": { "sectionPages": true } } },
+    { "dispatch": { "type": "presentGoto", "step": 1 } },
+    { "wait": 1200 },
+    { "eval": "document.getElementById('secpage').classList.contains('on') && document.getElementById('secpage-name').textContent.length > 0", "window": "leaderboard", "equals": true },
+    { "dispatch": { "type": "setFlow", "flow": { "sectionPages": false } } },
+    { "wait": 1200 },
+    { "eval": "document.getElementById('secpage').classList.contains('on')", "window": "leaderboard", "equals": false },
     { "branding": { "appName": "Smoke Test" } },
     { "wait": 800 }
   ]

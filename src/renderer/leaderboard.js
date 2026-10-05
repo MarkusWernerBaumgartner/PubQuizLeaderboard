@@ -241,6 +241,18 @@
     lastRulesVisible = vis;
   }
 
+  // A section page is a step of its own: a full-screen round title between rounds.
+  function renderSection() {
+    const step = L.currentStep(state), box = $('secpage');
+    const round = step && step.type === 'section' ? state.rounds.find((r) => r.id === step.roundId) : null;
+    if (round) {
+      $('secpage-name').textContent = round.name;
+      const n = round.questions.length;
+      $('secpage-sub').textContent = `${n} question${n === 1 ? '' : 's'}`;
+    }
+    box.classList.toggle('on', !!round);
+  }
+
   function renderHome() {
     $('home-title').textContent = state.title;
     $('home').classList.toggle('on', !!(state.home && state.home.visible));
@@ -349,6 +361,7 @@
     renderLegend();
     renderQuestion();
     renderRules();
+    renderSection();
     renderHome();
   }
 
