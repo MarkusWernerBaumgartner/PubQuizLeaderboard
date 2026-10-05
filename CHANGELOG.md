@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- **Home page**: a full-screen logo and title page for the start of the night (🏠 Home in the bottom bar, or `H`), with the same entrance and wobble animations as the launcher and drifting background shapes. It sits above the rules and the board, uses your branding, and follows the "Launcher intro" and crest-wobble effect switches.
+- **Presenter notes**: an optional private note on every question (Questions tab). It pops up on the Admin screen (and in Present mode) when you reveal the answer, and is never shown on the Leaderboard.
+- **Question timer**: a countdown (default 45 s, set per quiz, 5–600 s) that appears on the Leaderboard, turns amber then red in the last 10 and 5 seconds, and ends with "Time!". Start/stop it from Present mode with **Space**; moving to another step stops it.
+- **Present mode** (🎬 Present button or `P`): a full-window Admin layer with huge Prev / Timer / Next / Reveal buttons, the current question and answer, and easy keys (Space, →/Enter, ←/Backspace, `A`, `R`, `H`, Esc), all listed on screen in a shortcut cheat-sheet (`?` hides or shows it).
 - **Answer reveal mode**: a toggle in the Presentation bar (or press `R`) that shows each answer as soon as you reach it while flicking through questions, handy when grading a round. **Reveal answer** still hides/shows manually. The setting is saved with the quiz.
 
 ## [1.2.0] - 2026-10-02

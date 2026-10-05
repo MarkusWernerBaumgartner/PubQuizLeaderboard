@@ -126,6 +126,23 @@ app.whenReady().then(() => {
     return { ok: true, delivered: !!(windows.leaderboard && !windows.leaderboard.isDestroyed()) };
   });
 
+  // ---- question timer: ephemeral (never saved). One absolute end time so every window agrees. ----
+  let timer = { running: false, endsAt: 0, durationMs: 0 };
+  const setTimer = (t) => {
+    timer = t;
+    for (const w of BrowserWindow.getAllWindows()) if (!w.isDestroyed()) w.webContents.send('timer:changed', timer);
+  };
+  ipcMain.handle('timer:get', () => timer);
+  ipcMain.handle('timer:start', (_e, seconds) => {
+    if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 1 || seconds > 3600) return timer;
+    setTimer({ running: true, endsAt: Date.now() + seconds * 1000, durationMs: seconds * 1000 });
+    return timer;
+  });
+  ipcMain.handle('timer:stop', () => {
+    if (timer.running) setTimer({ running: false, endsAt: 0, durationMs: 0 });
+    return timer;
+  });
+
   // ---- branding ----
   const brandingAction = (fn) => async (e, ...args) => {
     try { await fn(e, ...args); return { ok: true, payload: branding.payload() }; }

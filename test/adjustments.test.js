@@ -19,7 +19,7 @@ test('written questions: validated, normalised, no options step', () => {
   let s = quiz();
   const rid = s.rounds[0].id;
   s = L.reduce(s, { type: 'setQuestions', roundId: rid, questions: [tq('  Capital of France? ', ' Paris '), q('B', 1)] });
-  assert.deepEqual(s.rounds[0].questions[0], { type: 'text', text: 'Capital of France?', options: [], correct: null, answer: 'Paris', media: '' });
+  assert.deepEqual(s.rounds[0].questions[0], { type: 'text', text: 'Capital of France?', options: [], correct: null, answer: 'Paris', media: '', notes: '' });
   assert.equal(s.rounds[0].questions[1].type, 'choice');
   assert.deepEqual(L.presentationSteps(s).map((x) => x.type), ['board', 'question', 'board', 'question', 'options', 'board']);
   assert.equal(L.reduce(s, { type: 'setQuestions', roundId: rid, questions: [{ type: 'essay', text: 'x' }] }), s);

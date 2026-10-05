@@ -245,3 +245,51 @@ test('answer reveal mode shows answers on arrival and persists', () => {
   s = L.reduce(s, { type: 'presentNext' });
   assert.equal(s.presentation.revealAnswer, false);
 });
+
+test('presenter notes: kept and trimmed on both question types, optional, validated', () => {
+  let s = quiz({ rounds: 1 });
+  const rid = s.rounds[0].id;
+  const choice = { ...q('A', 1), notes: '  Fun fact: it was 1912.  ' };
+  const text = { type: 'text', text: 'B', answer: 'x', notes: 'Ask who guessed 1913' };
+  s = L.reduce(s, { type: 'setQuestions', roundId: rid, questions: [choice, text, q('C')] });
+  const qs = s.rounds[0].questions;
+  assert.equal(qs[0].notes, 'Fun fact: it was 1912.', 'trimmed');
+  assert.equal(qs[1].notes, 'Ask who guessed 1913');
+  assert.equal(qs[2].notes, '', 'defaults to empty');
+  assert.equal(L.canReveal({ question: { ...q('C'), notes: 'only notes' } }), false, 'notes alone do not make an answer');
+  assert.equal(L.reduce(s, { type: 'setQuestions', roundId: rid, questions: [{ ...q('A'), notes: 5 }] }), s, 'non-string rejected');
+  const long = L.reduce(s, { type: 'setQuestions', roundId: rid, questions: [{ ...q('A'), notes: 'x'.repeat(5000) }] });
+  assert.equal(long.rounds[0].questions[0].notes.length, 1000, 'capped');
+  const loaded = L.reduce(L.defaultState(), { type: 'load', state: JSON.parse(JSON.stringify(s)) });
+  assert.equal(loaded.rounds[0].questions[1].notes, 'Ask who guessed 1913', 'survives save/load');
+});
+
+test('home page: off by default, toggles, persists, old saves load without it', () => {
+  let s = L.defaultState();
+  assert.equal(s.home.visible, false);
+  s = L.reduce(s, { type: 'setHomeVisible', visible: true });
+  assert.equal(s.home.visible, true);
+  assert.equal(L.reduce(s, { type: 'setHomeVisible', visible: true }), s, 'no-op when unchanged');
+  const loaded = L.reduce(L.defaultState(), { type: 'load', state: JSON.parse(JSON.stringify(s)) });
+  assert.equal(loaded.home.visible, true, 'survives save/load');
+  const old = JSON.parse(JSON.stringify(L.defaultState()));
+  delete old.home;
+  assert.equal(L.reduce(L.defaultState(), { type: 'load', state: old }).home.visible, false, 'old quizzes start without it');
+  assert.equal(L.reduce(s, { type: 'resetAll' }).home.visible, false, 'reset clears it');
+});
+
+test('question timer length defaults to 45s, is clamped and persists', () => {
+  let s = L.defaultState();
+  assert.equal(s.presentation.timerSeconds, 45);
+  s = L.reduce(s, { type: 'setTimerSeconds', seconds: 60 });
+  assert.equal(s.presentation.timerSeconds, 60);
+  assert.equal(L.reduce(s, { type: 'setTimerSeconds', seconds: 60 }), s, 'no-op when unchanged');
+  assert.equal(L.reduce(s, { type: 'setTimerSeconds', seconds: 'abc' }), s, 'rejects non-numbers');
+  assert.equal(L.reduce(s, { type: 'setTimerSeconds', seconds: 1 }).presentation.timerSeconds, 5, 'clamped low');
+  assert.equal(L.reduce(s, { type: 'setTimerSeconds', seconds: 9999 }).presentation.timerSeconds, 600, 'clamped high');
+  const loaded = L.reduce(L.defaultState(), { type: 'load', state: JSON.parse(JSON.stringify(s)) });
+  assert.equal(loaded.presentation.timerSeconds, 60, 'survives save/load');
+  const old = JSON.parse(JSON.stringify(L.defaultState()));
+  delete old.presentation.timerSeconds;
+  assert.equal(L.reduce(L.defaultState(), { type: 'load', state: old }).presentation.timerSeconds, 45, 'old quizzes get 45');
+});

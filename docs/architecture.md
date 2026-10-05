@@ -49,7 +49,8 @@ If the reducer rejects an action (invalid score, duplicate team name, …) it re
   teams:    [{ id, name, colour, scores: { [roundId]: number } }],
   adjustments: [{ id, teamId, points (≠0; <0 penalty, >0 bonus), reason }],   // added to team totals
   rules:    { items: string[], visible: boolean },
-  presentation: { step: number, revealAnswer: boolean },
+  home: { visible: boolean },   // full-screen logo/title page, above the rules
+  presentation: { step: number, revealAnswer: boolean, autoReveal: boolean, timerSeconds: number },
   history:  [{ teamId, roundId, prev, next } | { adjId }],   // for undo, capped at 500
   nextId }
 ```
@@ -88,6 +89,8 @@ Actions: `setTitle`, `setRounds`, `addTeam`, `renameTeam`, `removeTeam`, `setSco
 | `settings:get`, `settings:set`, `settings:preset`, `settings:reset` | renderer → main | read and change the effects settings |
 | `settings:changed` | main → renderers | broadcast new settings |
 | `effects:preview` | renderer → main → leaderboard | play a celebration with the current settings |
+| `timer:get`, `timer:start`, `timer:stop` | renderer → main | question countdown. Not part of the saved quiz: main keeps one `{running, endsAt, durationMs}` snapshot (absolute end time, so all windows agree and a late-opened Leaderboard catches up). The length itself is `presentation.timerSeconds` in the quiz |
+| `timer:changed` | main → renderers | broadcast the new timer snapshot |
 | `admin:section` | main → admin | switch Admin tab (e.g. from the launcher) |
 
 ## Rendering the leaderboard

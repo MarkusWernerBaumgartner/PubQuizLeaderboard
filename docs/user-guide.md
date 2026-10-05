@@ -26,6 +26,8 @@ For each round you can add questions of two kinds (use **+ Multiple choice** / *
 
 Questions are shown on the big screen as a slideshow (see below). Optionally add **Answer media** to either kind of question: an `https://` link to an image or GIF (`.png .jpg .gif .webp …`) or a YouTube link. When you press **Reveal answer** the media slides in from the left over the leaderboard (YouTube videos autoplay), with the answer panel still visible on the right; it closes again when you un-reveal or move on. Needs an internet connection.
 
+**Presenter notes** – every question (either kind) has an optional **🗒 Presenter notes** box for things only you should see: a source, a fun fact, a follow-up. When you reveal the answer the notes pop up on the Admin screen (and in present mode), and they go away when you hide the answer or move on. They are never shown on the Leaderboard.
+
 ### Teams tab
 Add teams one at a time (type a name and press Enter) or paste a list, one name per line. Names must be unique (case-insensitive). Each team gets a colour automatically. Removing a team that has scores asks for confirmation.
 
@@ -66,7 +68,28 @@ Use **Prev / Next**, the arrow keys, or Space (when no text box is focused). The
 
 **Answer reveal mode** (the *Answer reveal mode* button in the bottom bar, or press `R` when no text box is focused) makes every answer appear the moment you reach it: the options step of a multiple-choice question, or the question step of a written one. It is meant for grading a round: switch it on and flick through the questions. **Reveal answer** still hides or shows the current answer by hand, and the mode is saved with the quiz.
 
+### Present mode and the question timer
+For the part of the night where you only step through questions and answers, press **🎬 Present** in the Admin header (or `P`). A full-window layer shows the current step, the question and its answer (for you; the audience only sees it once revealed), and huge buttons: **Prev**, **Start timer**, **Next**, **Reveal answer** and **Answer reveal mode**.
+
+| Key | Action |
+| --- | --- |
+| `Space` | Start / stop the question timer |
+| `→` or `Enter` | Next step |
+| `←` or `Backspace` | Previous step |
+| `A` | Reveal / hide the answer |
+| `R` | Answer reveal mode on / off |
+| `H` | Home page on / off |
+| `?` | Show / hide the on-screen shortcut list |
+| `Esc` or `P` | Leave present mode |
+
+The same list is always shown at the bottom of present mode (press `?` to collapse it). `H` also works in normal Admin.
+
+The timer counts down on the Leaderboard (big, bottom-right, amber in the last 10 seconds, red in the last 5, "Time!" at zero). Its length (default 45 s, 5–600) is set in the field at the top of present mode and is saved with the quiz. Moving to another step stops the timer. Outside present mode Space still means *Next*.
+
 ![Question slideshow](media/question-slideshow.gif)
+
+### Starting the night with the Home page
+Switch on **🏠 Home** (bottom bar, or press `H`) to cover the Leaderboard with a full-screen page of your logo (or wordmark) and the quiz title, with the launcher's pop-in and wobble animations over drifting shapes. Show it on the projector while people arrive, then switch it off to reveal whatever is underneath: the rules, or the board. It uses your [branding](branding.md) and is off in a fresh quiz.
 
 ### Starting the night with the rules
 Turn on **Rules** (header of the Rules tab or the bottom bar) before you begin. The rules appear one by one; turn it off to reveal the leaderboard.

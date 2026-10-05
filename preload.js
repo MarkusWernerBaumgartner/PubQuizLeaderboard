@@ -45,6 +45,14 @@ contextBridge.exposeInMainWorld('quiz', {
     return () => ipcRenderer.removeListener('settings:changed', handler);
   },
   onEffectPreview: (cb) => ipcRenderer.on('effects:preview', (_e, kind) => cb(kind)),
+  timerGet: () => ipcRenderer.invoke('timer:get'),
+  timerStart: (seconds) => ipcRenderer.invoke('timer:start', seconds),
+  timerStop: () => ipcRenderer.invoke('timer:stop'),
+  onTimer: (cb) => {
+    const handler = (_e, t) => cb(t);
+    ipcRenderer.on('timer:changed', handler);
+    return () => ipcRenderer.removeListener('timer:changed', handler);
+  },
   appInfo: () => ipcRenderer.invoke('app:info'),
   quit: () => ipcRenderer.invoke('app:quit'),
 });

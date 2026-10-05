@@ -10,7 +10,7 @@ try {
   const report = JSON.parse(fs.readFileSync(path.join(dir, 'report.json'), 'utf8'));
   if (!report.ok) problems.push(...report.errors);
 } catch (e) { problems.push('no report.json – the app did not finish the scenario'); }
-for (const name of ['launcher', 'leaderboard', 'admin', 'leaderboard-after']) {
+for (const name of ['launcher', 'leaderboard', 'admin', 'leaderboard-after', 'leaderboard-home']) {
   const file = path.join(dir, `${name}.png`);
   const size = fs.existsSync(file) ? fs.statSync(file).size : 0;
   if (size < 5000) problems.push(`${name}.png missing or blank (${size} bytes)`);

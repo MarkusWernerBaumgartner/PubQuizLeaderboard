@@ -224,6 +224,11 @@
     lastRulesVisible = vis;
   }
 
+  function renderHome() {
+    $('home-title').textContent = state.title;
+    $('home').classList.toggle('on', !!(state.home && state.home.visible));
+  }
+
   // ---- events ---------------------------------------------------------------------
   let bannerTimer;
   function banner(text, kind) {
@@ -327,6 +332,7 @@
     renderLegend();
     renderQuestion();
     renderRules();
+    renderHome();
   }
 
   function apply(next) {
@@ -344,6 +350,31 @@
     if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); Q.dispatch({ type: 'presentNext' }); }
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); Q.dispatch({ type: 'presentPrev' }); }
   });
+
+  // ---- question countdown: rendered from one shared end time, so it never drifts from Admin's ----
+  let timer = { running: false, endsAt: 0 }, timerRaf = 0, timerHide = 0;
+  function tickTimer() {
+    const box = $('qtimer'), num = $('qt-num');
+    const left = Math.max(0, timer.endsAt - Date.now());
+    const secs = Math.ceil(left / 1000);
+    num.textContent = secs > 0 ? secs : 'Time!';
+    box.classList.toggle('warn', secs <= 10 && secs > 5);
+    box.classList.toggle('urgent', secs <= 5 && secs > 0);
+    box.classList.toggle('done', secs === 0);
+    if (secs > 0) { timerRaf = requestAnimationFrame(tickTimer); return; }
+    timerRaf = 0;
+    timerHide = setTimeout(() => box.classList.remove('on'), 4000); // linger on "Time!"
+  }
+  function applyTimer(t) {
+    timer = t || { running: false, endsAt: 0 };
+    cancelAnimationFrame(timerRaf); timerRaf = 0;
+    clearTimeout(timerHide);
+    const box = $('qtimer');
+    if (timer.running && timer.endsAt > Date.now()) { box.classList.add('on'); tickTimer(); }
+    else { box.classList.remove('on', 'warn', 'urgent', 'done'); }
+  }
+  Q.onTimer(applyTimer);
+  Q.timerGet().then(applyTimer);
 
   Q.onChange(apply);
   Q.getState().then(apply);

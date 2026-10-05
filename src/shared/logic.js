@@ -14,6 +14,8 @@
     'Be loud, be silly, be kind. Most importantly: have fun!',
   ];
   const HISTORY_CAP = 500;
+  const DEFAULT_TIMER = 45;
+  const clampTimer = (v) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(600, Math.max(5, Math.round(v))) : DEFAULT_TIMER);
 
   const clone = (o) => JSON.parse(JSON.stringify(o));
   const isObj = (o) => o !== null && typeof o === 'object' && !Array.isArray(o);
@@ -30,7 +32,8 @@
       teams: [],
       adjustments: [],
       rules: { items: DEFAULT_RULES.slice(), visible: true },
-      presentation: { step: 0, revealAnswer: false, autoReveal: false },
+      home: { visible: false },   // full-screen logo/title page for the start of the night (sits above the rules)
+      presentation: { step: 0, revealAnswer: false, autoReveal: false, timerSeconds: DEFAULT_TIMER },
       history: [],
       nextId: 6,
     };
@@ -43,13 +46,16 @@
     if (!isObj(x) || typeof x.text !== 'string') return false;
     if (x.type !== undefined && x.type !== 'choice' && x.type !== 'text') return false;
     if (x.media !== undefined && typeof x.media !== 'string') return false;
+    if (x.notes !== undefined && x.notes !== null && typeof x.notes !== 'string') return false;
     if (x.type === 'text') return x.answer === undefined || x.answer === null || typeof x.answer === 'string';
     return Array.isArray(x.options) && x.options.length === 4 && x.options.every((o) => typeof o === 'string') &&
       (x.correct === null || x.correct === undefined || (Number.isInteger(x.correct) && x.correct >= 0 && x.correct <= 3));
   }
+  // Presenter notes: private to the Admin window (shown on reveal), never rendered on the Leaderboard.
+  const cleanNotes = (v) => str(v).slice(0, 1000).trim();
   const cleanQuestion = (x) => x.type === 'text'
-    ? { type: 'text', text: x.text.trim(), options: [], correct: null, answer: str(x.answer), media: str(x.media) }
-    : { type: 'choice', text: x.text.trim(), options: x.options.map((o) => o.trim()), correct: x.correct === undefined ? null : x.correct, media: str(x.media) };
+    ? { type: 'text', text: x.text.trim(), options: [], correct: null, answer: str(x.answer), media: str(x.media), notes: cleanNotes(x.notes) }
+    : { type: 'choice', text: x.text.trim(), options: x.options.map((o) => o.trim()), correct: x.correct === undefined ? null : x.correct, media: str(x.media), notes: cleanNotes(x.notes) };
   // Does this question have something to reveal? (written: a model answer or answer media)
   const hasAnswer = (q) => !!q && (isText(q) ? !!(q.answer || q.media) : q.correct != null);
   const adjKind = (a) => (a.points > 0 ? 'bonus' : 'penalty');
@@ -114,11 +120,12 @@
       ? typeof h.adjId === 'string' && adjIds.has(h.adjId)
       : typeof h.teamId === 'string' && typeof h.roundId === 'string')) : [];
     const state = {
-      version: 1, title: obj.title, rounds, teams, adjustments, rules,
+      version: 1, title: obj.title, rounds, teams, adjustments, rules, home: { visible: !!(obj.home && obj.home.visible) },
       presentation: {
         step: Number.isInteger(obj.presentation && obj.presentation.step) ? obj.presentation.step : 0,
         autoReveal: !!(obj.presentation && obj.presentation.autoReveal),
         revealAnswer: !!(obj.presentation && obj.presentation.autoReveal),
+        timerSeconds: clampTimer(obj.presentation && obj.presentation.timerSeconds),
       },
       history, nextId: Math.max(maxN + 1, Number.isInteger(obj.nextId) ? obj.nextId : 0),
     };
@@ -272,6 +279,10 @@
         if (s.rules.visible === !!action.visible) return state;
         s.rules.visible = !!action.visible;
         return s;
+      case 'setHomeVisible':
+        if (s.home.visible === !!action.visible) return state;
+        s.home.visible = !!action.visible;
+        return s;
       case 'setQuestions': {
         const round = s.rounds.find((r) => r.id === action.roundId);
         if (!round || !Array.isArray(action.questions) || !action.questions.every(validQuestion)) return state;
@@ -299,6 +310,13 @@
         if (!!s.presentation.autoReveal === on) return state;
         s.presentation.autoReveal = on;
         s.presentation.revealAnswer = on && canReveal(currentQuestion(s));
+        return s;
+      }
+      case 'setTimerSeconds': {
+        if (typeof action.seconds !== 'number' || !Number.isFinite(action.seconds)) return state;
+        const secs = clampTimer(action.seconds);
+        if (secs === s.presentation.timerSeconds) return state;
+        s.presentation.timerSeconds = secs;
         return s;
       }
       case 'presentReveal': {

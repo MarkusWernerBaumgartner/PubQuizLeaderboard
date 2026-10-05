@@ -52,6 +52,8 @@
     });
   }
   async function dispatch(action, inputEl, failMsg) {
+    // Moving to another step ends any running question countdown.
+    if (action.type === 'presentNext' || action.type === 'presentPrev' || action.type === 'presentGoto') Q.timerStop();
     const res = await Q.dispatch(action);
     if (!res.ok && inputEl) {
       inputEl.classList.remove('shake'); void inputEl.offsetWidth; inputEl.classList.add('shake');
@@ -130,7 +132,12 @@
           onchange: (e) => { const l = copy(); l[qi].media = e.target.value; commit(l); } }); inp.value = q.media || ''; return inp; })()),
       q.media ? el('div', { class: 'muted', style: 'margin-top:.25rem', text: (() => { const m = L.parseMedia(q.media); return m ? (m.kind === 'youtube' ? '✓ YouTube video – plays on reveal' : '✓ Image – shown on reveal') : '⚠ Not recognised: use an https:// link to an image/GIF (.png .jpg .gif .webp …) or a YouTube video'; })() }) : null,
     ];
-    const blank = (type) => (type === 'text' ? { type: 'text', text: '', answer: '', media: '' } : { type: 'choice', text: '', options: ['', '', '', ''], correct: null, media: '' });
+    const notesRow = (q, qi) => el('div', { class: 'row', style: 'margin-top:.5rem; align-items:flex-start' },
+      el('span', { class: 'muted', text: '🗒 Presenter notes' }),
+      (() => { const ta = el('textarea', { class: 'grow notes-input', rows: 2, maxlength: 1000, 'data-key': `q${qi}notes`,
+        placeholder: 'Optional: private notes for you (trivia, source, follow-ups). Shown on this Admin screen when you reveal the answer – never on the Leaderboard',
+        onchange: (e) => { const l = copy(); l[qi].notes = e.target.value; commit(l); } }); ta.value = q.notes || ''; return ta; })());
+    const blank = (type) => (type === 'text' ? { type: 'text', text: '', answer: '', media: '', notes: '' } : { type: 'choice', text: '', options: ['', '', '', ''], correct: null, media: '', notes: '' });
     const cards = qs.map((q, qi) => el('div', { class: 'q-card' },
       el('div', { class: 'row' },
         el('b', { class: 'muted', text: 'Q' + (qi + 1) }),
@@ -141,12 +148,13 @@
         el('button', { class: 'icon del', text: '✕', title: 'Delete question', onclick: () => commit(copy().filter((_, j) => j !== qi)) })),
       el('div', { class: 'pills small' }, [['choice', 'Multiple choice'], ['text', 'Written answer']].map(([type, label]) => el('button', {
         class: 'pill' + ((L.isText(q) ? 'text' : 'choice') === type ? ' on' : ''), text: label,
-        onclick: () => { if ((L.isText(q) ? 'text' : 'choice') === type) return; const l = copy(); l[qi] = { ...blank(type), text: q.text }; commit(l); } }))),
+        onclick: () => { if ((L.isText(q) ? 'text' : 'choice') === type) return; const l = copy(); l[qi] = { ...blank(type), text: q.text, notes: q.notes || '' }; commit(l); } }))),
       L.isText(q)
         ? [el('div', { class: 'q-opt' }, el('span', { class: 'letter', text: '✎' }),
             (() => { const inp = el('input', { type: 'text', placeholder: 'Model answer (optional – shown on "Reveal answer")', 'data-key': `q${qi}ans`,
               onchange: (e) => { const l = copy(); l[qi].answer = e.target.value; commit(l); } }); inp.value = q.answer || ''; return inp; })()),
           ...mediaRow(q, qi),
+          notesRow(q, qi),
           el('div', { class: 'row muted', style: 'margin-top:.5rem', text: 'Teams write their answer down – nothing but the question is shown on screen until you reveal.' })]
         : [...q.options.map((o, oi) => el('div', { class: 'q-opt' },
             el('span', { class: 'letter', text: 'ABCD'[oi] }),
@@ -155,6 +163,7 @@
             el('input', { type: 'radio', name: 'correct' + qi, title: 'Mark as correct answer', checked: q.correct === oi,
               onclick: () => { const l = copy(); l[qi].correct = oi; commit(l); } }))),
           ...mediaRow(q, qi),
+          notesRow(q, qi),
           el('div', { class: 'row muted', style: 'margin-top:.5rem' },
             el('span', { text: q.correct == null ? 'No correct answer set (optional – needed for "Reveal answer")' : `Correct answer: ${'ABCD'[q.correct]}` }),
             q.correct == null ? null : el('button', { class: 'btn small ghost', text: 'Clear', onclick: () => { const l = copy(); l[qi].correct = null; commit(l); } }))]));
@@ -381,6 +390,9 @@
     const dots = el('div', { class: 'dots' }, steps.map((s, j) => el('i', { class: (s.type === 'board' ? 'board ' : '') + (j === i ? 'on' : ''), title: describeStep(s),
       onclick: () => dispatch({ type: 'presentGoto', step: j }) })));
     return [
+      el('button', { class: 'btn small ' + (state.home.visible ? 'gold' : 'ghost'), text: state.home.visible ? '🏠 Home: ON' : '🏠 Home: off',
+        title: 'Home page (H): full-screen logo and title on the Leaderboard, above the rules',
+        onclick: () => dispatch({ type: 'setHomeVisible', visible: !state.home.visible }) }),
       el('button', { class: 'btn small ' + (state.rules.visible ? 'gold' : 'ghost'), text: state.rules.visible ? '📜 Rules: ON' : '📜 Rules: off',
         onclick: () => dispatch({ type: 'setRulesVisible', visible: !state.rules.visible }) }),
       el('button', { class: 'btn', text: '◀ Prev', disabled: i === 0, onclick: () => dispatch({ type: 'presentPrev' }) }),
@@ -427,7 +439,125 @@
       withFocusKept(() => $('main').replaceChildren(BUILDERS[section]()));
     }
     $('present').replaceChildren(...buildPresent());
+    updateNotes();
+    if (pmOpen()) updatePM();
   }
+
+  // ---- presenter notes (Admin only; the Leaderboard never renders them) -------------
+  let notesDismissedStep = null;
+  function revealedNotes() {
+    const cur = L.currentQuestion(state);
+    return cur && state.presentation.revealAnswer && cur.question.notes ? cur.question.notes : '';
+  }
+  function updateNotes() {
+    const text = revealedNotes();
+    if (!state.presentation.revealAnswer) notesDismissedStep = null;
+    const box = $('notes');
+    const show = !!text && notesDismissedStep !== state.presentation.step;
+    box.hidden = !show;
+    if (show) box.replaceChildren(el('div', { class: 'notes-head' }, el('b', { text: '🗒 Presenter notes' }),
+      el('button', { class: 'icon', text: '✕', title: 'Dismiss', onclick: () => { notesDismissedStep = state.presentation.step; updateNotes(); } })),
+      el('div', { class: 'notes-body', text }));
+  }
+
+  // ---- present mode ---------------------------------------------------------
+  // Full-window layer: big Prev / Timer / Next / Reveal buttons plus keys that are easy to hit blind.
+  let timer = { running: false, endsAt: 0 };   // mirror of the main process's shared countdown
+  let pm = null, pmTick = 0;
+  const pmOpen = () => !$('pm').hidden;
+  const timerActive = () => timer.running && timer.endsAt > Date.now();
+  function toggleTimer() { if (timerActive()) Q.timerStop(); else Q.timerStart(state.presentation.timerSeconds); }
+
+  function buildPM() {
+    const btn = (cls, text, fn) => el('button', { class: 'btn big ' + cls, text, onclick: (e) => { fn(); e.currentTarget.blur(); } });
+    const dur = el('input', { type: 'number', min: 5, max: 600, step: 1, title: 'Timer length in seconds (5–600), saved with the quiz',
+      onchange: (e) => dispatch({ type: 'setTimerSeconds', seconds: Number(e.target.value) }, e.target, 'Timer must be a number of seconds') });
+    pm = {
+      step: el('div', { class: 'pm-step' }), sub: el('div', { class: 'pm-sub' }),
+      qtext: el('div', { class: 'pm-qtext' }), ans: el('div', { class: 'pm-ans' }),
+      time: el('div', { class: 'pm-timer' }), dur,
+      notes: el('div', { class: 'notes pm-notes', hidden: true }),
+      keys: el('div', { class: 'pm-keys' }),
+      prev: btn('', '◀ Prev', () => dispatch({ type: 'presentPrev' })),
+      next: btn('gold', 'Next ▶', () => dispatch({ type: 'presentNext' })),
+      timerBtn: btn('', '', toggleTimer),
+      reveal: btn('', '', () => dispatch({ type: 'presentReveal' })),
+      auto: btn('ghost', '', () => dispatch({ type: 'setAutoReveal', on: !state.presentation.autoReveal })),
+    };
+    $('pm').replaceChildren(
+      el('div', { class: 'pm-top' }, el('div', { class: 'grow' }, pm.step, pm.sub),
+        el('label', { class: 'pm-dur' }, 'Timer', dur, 's'),
+        el('button', { class: 'btn ghost', text: '✕ Exit', onclick: closePM })),
+      el('div', { class: 'pm-q' }, pm.qtext, pm.ans),
+      pm.time,
+      el('div', { class: 'pm-btns' }, pm.prev, pm.timerBtn, pm.next),
+      el('div', { class: 'pm-btns2' }, pm.reveal, pm.auto),
+      pm.notes,
+      pm.keys);
+  }
+  // One list drives both the key handler (below) and the on-screen cheat-sheet.
+  const PM_KEYS = [
+    { keys: ['Space'], does: 'Start / stop the timer' },
+    { keys: ['→', 'Enter', 'PgDn'], does: 'Next step' },
+    { keys: ['←', 'Backspace', 'PgUp'], does: 'Previous step' },
+    { keys: ['A'], does: 'Reveal / hide the answer' },
+    { keys: ['R'], does: 'Answer reveal mode on / off' },
+    { keys: ['H'], does: 'Home page on / off' },
+    { keys: ['?'], does: 'Show / hide this list' },
+    { keys: ['Esc', 'P'], does: 'Leave present mode' },
+  ];
+  const keysShown = () => { try { return sessionStorage.getItem('admin.pmKeys') !== 'off'; } catch (e) { return true; } };
+  function toggleKeys() {
+    try { sessionStorage.setItem('admin.pmKeys', keysShown() ? 'off' : 'on'); } catch (e) { /* ignore */ }
+    updatePM();
+  }
+  function updatePM() {
+    const steps = L.presentationSteps(state), i = state.presentation.step, cur = L.currentQuestion(state);
+    pm.step.textContent = describeStep(steps[i]);
+    pm.sub.textContent = steps.length > 1 ? `Step ${i + 1} of ${steps.length}` : 'No questions yet – add some in the Questions tab';
+    pm.qtext.textContent = cur ? (cur.question.text || '…') : '';
+    let answer = '';
+    if (cur) {
+      if (L.isText(cur.question)) answer = L.hasAnswer(cur.question) ? cur.question.answer : '';
+      else if (cur.question.correct !== null && cur.question.correct !== undefined) answer = `${'ABCD'[cur.question.correct]}: ${cur.question.options[cur.question.correct] || ''}`;
+    }
+    pm.ans.textContent = answer ? `Answer – ${answer}` : '';
+    pm.ans.style.opacity = state.presentation.revealAnswer ? '1' : '.55';
+    pm.prev.disabled = i === 0;
+    pm.next.disabled = i >= steps.length - 1;
+    pm.reveal.disabled = !L.canReveal(cur);
+    pm.reveal.textContent = state.presentation.revealAnswer ? 'Hide answer (A)' : 'Reveal answer (A)';
+    pm.auto.textContent = state.presentation.autoReveal ? '✅ Answer reveal mode: ON (R)' : 'Answer reveal mode: off (R)';
+    pm.auto.classList.toggle('gold', !!state.presentation.autoReveal);
+    pm.auto.classList.toggle('ghost', !state.presentation.autoReveal);
+    const notes = revealedNotes();
+    pm.notes.hidden = !notes;
+    if (notes) pm.notes.replaceChildren(el('div', { class: 'notes-head' }, el('b', { text: '🗒 Presenter notes' })), el('div', { class: 'notes-body', text: notes }));
+    pm.keys.className = 'pm-keys' + (keysShown() ? '' : ' collapsed');
+    if (!pm.keys.dataset.built) {
+      pm.keys.dataset.built = '1';
+      pm.keys.replaceChildren(el('div', { class: 'pm-keys-head', text: '⌨ Keyboard shortcuts' }),
+        el('div', { class: 'pm-keys-grid' }, PM_KEYS.map((r) => el('div', { class: 'pm-key' },
+          el('span', { class: 'ks' }, r.keys.flatMap((k, i) => (i ? ['/', el('kbd', { text: k })] : [el('kbd', { text: k })]))),
+          el('span', { class: 'kd', text: r.does })))));
+    }
+    if (document.activeElement !== pm.dur) pm.dur.value = state.presentation.timerSeconds;
+    const active = timerActive();
+    const secs = active ? Math.ceil((timer.endsAt - Date.now()) / 1000) : 0;
+    pm.timerBtn.textContent = active ? '■ Stop timer (Space)' : `⏱ Start ${state.presentation.timerSeconds}s timer (Space)`;
+    pm.timerBtn.classList.toggle('coral', active);
+    pm.time.textContent = active ? secs : (timer.running ? 'Time!' : state.presentation.timerSeconds);
+    pm.time.className = 'pm-timer' + (active ? ' run' : '') + (active && secs <= 10 && secs > 5 ? ' warn' : '') + (active && secs <= 5 ? ' urgent' : '') + (!active && timer.running ? ' done' : '');
+  }
+  function openPM() {
+    if (!state) return;
+    if (!pm) buildPM();
+    $('pm').hidden = false;
+    updatePM();
+    clearInterval(pmTick);
+    pmTick = setInterval(updatePM, 200);
+  }
+  function closePM() { $('pm').hidden = true; clearInterval(pmTick); }
 
   // ---- header + keyboard ------------------------------------------------------
   $('undo').onclick = () => dispatch({ type: 'undo' });
@@ -469,10 +599,33 @@
   document.addEventListener('keydown', (e) => {
     const tag = e.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || !$('modal').hidden) return;
+    const plain = !e.ctrlKey && !e.metaKey && !e.altKey;
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (pmOpen()) {
+      if (!plain || !state) return;
+      const act = k === ' ' ? toggleTimer
+        : (k === 'ArrowRight' || k === 'Enter' || k === 'PageDown') ? () => dispatch({ type: 'presentNext' })
+        : (k === 'ArrowLeft' || k === 'Backspace' || k === 'PageUp') ? () => dispatch({ type: 'presentPrev' })
+        : k === 'a' ? () => dispatch({ type: 'presentReveal' })
+        : k === 'r' ? () => dispatch({ type: 'setAutoReveal', on: !state.presentation.autoReveal })
+        : k === 'h' ? () => dispatch({ type: 'setHomeVisible', visible: !state.home.visible })
+        : k === '?' ? toggleKeys
+        : (k === 'Escape' || k === 'p') ? closePM : null;
+      if (act) { e.preventDefault(); if (tag === 'BUTTON') e.target.blur(); if (!e.repeat) act(); }
+      return;
+    }
+    if (k === 'p' && plain) { e.preventDefault(); openPM(); return; }
+    if (k === 'h' && plain) { e.preventDefault(); dispatch({ type: 'setHomeVisible', visible: !state.home.visible }); return; }
     if (e.key === 'ArrowRight' || (e.key === ' ' && tag !== 'BUTTON')) { e.preventDefault(); dispatch({ type: 'presentNext' }); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); dispatch({ type: 'presentPrev' }); }
     else if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); dispatch({ type: 'setAutoReveal', on: !state.presentation.autoReveal }); }
   });
+
+  // A focused button would also "click" on Space release; present mode owns Space.
+  document.addEventListener('keyup', (e) => { if (e.key === ' ' && pmOpen()) e.preventDefault(); });
+  $('present-mode').onclick = openPM;
+  Q.onTimer((t) => { timer = t; if (pmOpen() && state) updatePM(); });
+  Q.timerGet().then((t) => { timer = t; });
 
   Q.onChange((s) => { state = s; render(false); });
   Q.onBrandingChange((p) => { brand = p; render(false); });
