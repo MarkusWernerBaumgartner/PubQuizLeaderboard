@@ -20,6 +20,7 @@
     { "dispatch": { "type": "setTimerSeconds", "seconds": 60 } },
     { "expect": "presentation.timerSeconds", "equals": 60 },
     { "dispatch": { "type": "setQuestions", "roundId": "@round:0", "questions": [{ "text": "Smoke?", "options": ["a", "b", "c", "d"], "correct": 0, "notes": "SECRET-PRESENTER-NOTE" }] } },
+    { "dispatch": { "type": "presentGoto", "step": 1 } },
     { "dispatch": { "type": "presentGoto", "step": 2 } },
     { "dispatch": { "type": "presentReveal" } },
     { "wait": 600 },
