@@ -5,6 +5,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Coming up strip in Present mode**: the next steps by round and question number or section header (never any question or answer text), colour coded: purple leaderboard, teal section page, blue question, gold "answer on Reveal", coral "answer shows" (Answer reveal mode). Pills say how many steps until the next leaderboard and the next answer and whether it shows by itself. Click a chip to jump there.
+
 ### Changed
 - A section page is now followed by the leaderboard when "Return to the leaderboard between questions" is on, so you can read a round's questions out yourself while showing the section header, without using Answer reveal. (With that setting off, or in Answer reveal mode with *don't return to the leaderboard*, the first question follows directly.)
 

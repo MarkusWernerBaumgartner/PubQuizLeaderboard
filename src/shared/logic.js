@@ -175,6 +175,33 @@
     if (!flow.returnToBoard && steps.length > 1) steps.push({ type: 'board' });
     return steps;
   }
+  // What is coming up after the current step, by round and question number only (never any question or answer text).
+  // answer: 'auto' (shows by itself in Answer reveal mode), 'manual' (on Reveal), or null (nothing to reveal on this step).
+  function describeAhead(state, steps, i) {
+    const st = steps[i];
+    if (st.type === 'board') return { index: i, type: 'board' };
+    const rIdx = state.rounds.findIndex((r) => r.id === st.roundId), round = state.rounds[rIdx];
+    if (st.type === 'section') return { index: i, type: 'section', round: rIdx + 1, roundName: round.name };
+    const reveals = canReveal({ step: st, question: round.questions[st.qIndex] });
+    return { index: i, type: st.type, round: rIdx + 1, q: st.qIndex + 1, answer: reveals ? (state.presentation.autoReveal ? 'auto' : 'manual') : null };
+  }
+  function upcomingSteps(state, count = 8) {
+    const steps = presentationSteps(state), from = state.presentation.step + 1;
+    return steps.slice(from, from + count).map((_, k) => describeAhead(state, steps, from + k));
+  }
+  // How many steps until the next leaderboard / the next answer (null: none ahead), and whether that answer shows by itself.
+  function upcomingSummary(state) {
+    const steps = presentationSteps(state), cur = state.presentation.step;
+    let boardIn = null, answerIn = null, answerAuto = false;
+    for (let i = cur + 1; i < steps.length && (boardIn === null || answerIn === null); i++) {
+      if (boardIn === null && steps[i].type === 'board') boardIn = i - cur;
+      if (answerIn === null && (steps[i].type === 'question' || steps[i].type === 'options')) {
+        const d = describeAhead(state, steps, i);
+        if (d.answer) { answerIn = i - cur; answerAuto = d.answer === 'auto'; }
+      }
+    }
+    return { boardIn, answerIn, answerAuto };
+  }
   const currentStep = (state) => presentationSteps(state)[state.presentation.step] || null;
   function currentQuestion(state) {
     const step = currentStep(state);
@@ -470,5 +497,5 @@
     return { roundWinners, biggestClimber, bestWorst, leadChanges, gap, woodenSpoon };
   }
 
-  return { RULES_PER_PAGE, rulesPageCount, DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentStep, currentQuestion, parseMedia, scoredRounds, defaultFlow, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
+  return { RULES_PER_PAGE, rulesPageCount, DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentStep, upcomingSteps, upcomingSummary, currentQuestion, parseMedia, scoredRounds, defaultFlow, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
 });

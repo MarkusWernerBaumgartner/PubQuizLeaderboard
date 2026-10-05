@@ -533,6 +533,7 @@
     pm = {
       step: el('div', { class: 'pm-step' }), sub: el('div', { class: 'pm-sub' }),
       qtext: el('div', { class: 'pm-qtext' }),
+      ahead: el('div', { class: 'pm-ahead' }),
       time: el('div', { class: 'pm-timer' }), dur,
       notes: el('div', { class: 'notes pm-notes', hidden: true }),
       keys: el('div', { class: 'pm-keys' }),
@@ -546,12 +547,37 @@
       el('div', { class: 'pm-top' }, el('div', { class: 'grow' }, pm.step, pm.sub),
         el('label', { class: 'pm-dur' }, 'Timer', dur, 's'),
         el('button', { class: 'btn ghost', text: '✕ Exit', onclick: closePM })),
+      pm.ahead,
       el('div', { class: 'pm-q' }, pm.qtext),
       pm.time,
       el('div', { class: 'pm-btns' }, pm.prev, pm.timerBtn, pm.next),
       el('div', { class: 'pm-btns2' }, pm.reveal, pm.auto),
       pm.notes,
       pm.keys);
+  }
+  // "Coming up" strip: round and question numbers only (never question or answer text), colour coded:
+  // purple = leaderboard, teal = section page, blue = question, gold = answer on Reveal, coral = answer shows by itself.
+  function aheadChip(u) {
+    const kind = u.type === 'board' ? '' : u.type === 'section' ? '' : u.type === 'options' && !state.flow.splitOptions ? 'question + options' : u.type;
+    const label = u.type === 'board' ? '📊 Leaderboard' : u.type === 'section' ? `📄 Section · R${u.round}` : `R${u.round} · Q${u.q}`;
+    const cls = u.type === 'board' ? 'up-board' : u.type === 'section' ? 'up-section' : 'up-q';
+    return el('button', { class: 'up ' + cls, title: 'Jump to this step', onclick: (e) => { dispatch({ type: 'presentGoto', step: u.index }); e.currentTarget.blur(); } },
+      el('b', { text: label }), kind ? el('span', { class: 'up-kind', text: kind }) : null,
+      u.answer === 'auto' ? el('span', { class: 'up-tag up-auto', text: '✅ answer shows' }) : u.answer === 'manual' ? el('span', { class: 'up-tag up-manual', text: '✅ answer on Reveal' }) : null);
+  }
+  const inSteps = (n) => (n === 1 ? 'next step' : `in ${n} steps`);
+  function updateAhead() {
+    const list = L.upcomingSteps(state, 8), sum = L.upcomingSummary(state);
+    const sig = JSON.stringify([list, sum, state.flow.splitOptions]);
+    if (pm.ahead.dataset.sig === sig) return;
+    pm.ahead.dataset.sig = sig;
+    pm.ahead.replaceChildren(
+      el('div', { class: 'up-summary' },
+        el('span', { class: 'up-pill up-board', text: sum.boardIn === null ? '📊 Leaderboard: none ahead' : `📊 Leaderboard ${inSteps(sum.boardIn)}` }),
+        el('span', { class: 'up-pill ' + (sum.answerAuto ? 'up-auto' : 'up-manual'), text: sum.answerIn === null ? '✅ Answer: none ahead' : `✅ Answer ${inSteps(sum.answerIn)} (${sum.answerAuto ? 'shows by itself' : 'on Reveal'})` }),
+        el('span', { class: 'up-legend' }, el('i', { class: 'up-board' }), 'leaderboard ', el('i', { class: 'up-section' }), 'section ', el('i', { class: 'up-q' }), 'question ',
+          el('i', { class: 'up-manual' }), 'answer on Reveal ', el('i', { class: 'up-auto' }), 'answer shows')),
+      el('div', { class: 'up-row' }, el('span', { class: 'up-now', text: 'Coming up →' }), list.length ? list.map(aheadChip) : el('span', { class: 'muted', text: 'End of the quiz' })));
   }
   // One list drives both the key handler (below) and the on-screen cheat-sheet.
   const PM_KEYS = [
@@ -572,6 +598,7 @@
   }
   function updatePM() {
     const steps = L.presentationSteps(state), i = state.presentation.step, cur = L.currentQuestion(state);
+    updateAhead();
     pm.step.textContent = describeStep(steps[i]);
     pm.sub.textContent = steps.length > 1 ? `Step ${i + 1} of ${steps.length}` : 'No questions yet – add some in the Questions tab';
     pm.qtext.textContent = cur ? (cur.question.text || '…') : steps[i].type === 'section' ? `📄 Section page – ${describeStep(steps[i]).replace('Section page – ', '')}\nNothing is revealed here. Press Next to start the round.` : '';

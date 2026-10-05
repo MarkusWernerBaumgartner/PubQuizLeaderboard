@@ -171,3 +171,32 @@ test('toggling a flow option while on a leaderboard step keeps that same leaderb
   assert.equal(L.currentStep(reveal).type, 'board', 'reveal mode without the option keeps the boards');
   assert.ok(reveal.presentation.step > 0, 'did not jump back to the start');
 });
+
+test('upcoming: describes the next steps by round and Q number only, flagging boards and answers', () => {
+  let s = quiz(); // round 1: [mc A (answer), written B (answer)], round 2: [mc C (answer)]
+  const kinds = (n) => L.upcomingSteps(s, n).map((u) => u.type + (u.round ? `:R${u.round}` : '') + (u.q ? `Q${u.q}` : '') + (u.answer ? `/${u.answer}` : ''));
+  assert.deepEqual(kinds(9), ['question:R1Q1', 'options:R1Q1/manual', 'board', 'question:R1Q2/manual', 'board', 'question:R2Q1', 'options:R2Q1/manual', 'board']);
+  s = L.reduce(s, { type: 'setAutoReveal', on: true });
+  assert.ok(kinds(9).includes('options:R1Q1/auto'), 'answers are marked auto in Answer reveal mode');
+  // never leaks any question or answer text
+  for (const u of L.upcomingSteps(s, 20)) assert.deepEqual(Object.keys(u).filter((k) => /text|option|answer.*text/i.test(k)), []);
+  assert.equal(JSON.stringify(L.upcomingSteps(s, 20)).includes('"A"'), false);
+  // moves with the current step and stops at the end
+  s = L.reduce(s, { type: 'presentGoto', step: 7 });
+  assert.deepEqual(kinds(5), ['board']);
+  assert.deepEqual(L.upcomingSteps(L.reduce(s, { type: 'presentGoto', step: 8 }), 5), []);
+  // section pages show as such, with the round number and name
+  const sec = L.upcomingSteps(flow(quiz(), { sectionPages: true }), 2);
+  assert.deepEqual(sec.map((u) => [u.type, u.round, u.roundName]), [['section', 1, s.rounds[0].name], ['board', undefined, undefined]]);
+});
+
+test('upcoming summary: steps until the next leaderboard and the next answer, and whether it shows by itself', () => {
+  let s = quiz();
+  assert.deepEqual(L.upcomingSummary(s), { boardIn: 3, answerIn: 2, answerAuto: false });
+  s = L.reduce(s, { type: 'setAutoReveal', on: true });
+  assert.deepEqual(L.upcomingSummary(s), { boardIn: 3, answerIn: 2, answerAuto: true });
+  s = flow(s, { revealNoBoard: true }); // no leaderboard until the very end
+  assert.equal(L.upcomingSummary(L.reduce(s, { type: 'presentGoto', step: 0 })).boardIn, 6);
+  const end = L.reduce(s, { type: 'presentGoto', step: L.presentationSteps(s).length - 1 });
+  assert.deepEqual(L.upcomingSummary(end), { boardIn: null, answerIn: null, answerAuto: false }, 'nothing ahead at the end');
+});

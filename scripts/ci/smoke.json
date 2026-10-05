@@ -38,6 +38,9 @@
     { "dispatch": { "type": "setFlow", "flow": { "sectionPages": false } } },
     { "wait": 1200 },
     { "eval": "document.getElementById('secpage').classList.contains('on')", "window": "leaderboard", "equals": false },
+    { "eval": "document.getElementById('present-mode').click(), true", "window": "admin", "equals": true },
+    { "wait": 700 },
+    { "eval": "document.querySelectorAll('#pm .up').length > 0 && document.querySelectorAll('#pm .up-pill').length === 2", "window": "admin", "equals": true },
     { "branding": { "appName": "Smoke Test" } },
     { "wait": 800 }
   ]

@@ -72,22 +72,38 @@ footer .dots i.section { background: var(--accent-3); border-radius: 2px; }
 footer .dots i.on { background: var(--accent-1); transform: scale(1.5); }
 
 /* Present mode: a full-window layer with big controls for running the questions. */
-#pm { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; gap: 1.2rem; padding: 1.4rem 2rem; background: var(--bg-deep); }
+#pm { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; gap: .8rem; padding: 1rem 2rem; background: var(--bg-deep); overflow-y: auto; }
 #pm[hidden] { display: none; }
+#pm > * { flex-shrink: 0; }
 #pm .pm-top { display: flex; align-items: center; gap: 1rem; }
 #pm .pm-top .grow { flex: 1; }
 #pm .pm-step { font: 600 1.4rem var(--display); color: var(--accent-1); }
 #pm .pm-sub { color: var(--muted); font-weight: 800; }
-#pm .pm-q { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; justify-content: center; gap: 1rem; text-align: center; }
+/* Present mode "coming up" strip (colours: purple board, teal section, blue question, gold manual answer, coral automatic answer) */
+#pm .pm-ahead { display: flex; flex-direction: column; gap: .5rem; }
+#pm .up-summary { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .7rem; }
+#pm .up-row { display: flex; align-items: stretch; gap: .5rem; overflow-x: auto; padding-bottom: .3rem; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+#pm .up-now { flex: none; align-self: center; color: var(--muted); font-weight: 800; }
+#pm .up { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: .15rem; font: inherit; color: var(--text); cursor: pointer; padding: .35rem .7rem; border-radius: 12px; border: 2px solid var(--c); background: color-mix(in srgb, var(--c) 18%, var(--bg-deep)); }
+#pm .up:hover { background: color-mix(in srgb, var(--c) 32%, var(--bg-deep)); }
+#pm .up b { font-family: var(--display); font-size: 1.05rem; }
+#pm .up-kind { color: var(--muted); font-weight: 800; font-size: .8rem; }
+#pm .up-tag { font-weight: 800; font-size: .8rem; border-radius: 999px; padding: .05em .55em; color: var(--bg-deep); background: var(--tc); }
+#pm .up-pill { font-weight: 800; font-size: .95rem; border-radius: 999px; padding: .2em .8em; border: 2px solid var(--c); background: color-mix(in srgb, var(--c) 22%, var(--bg-deep)); }
+#pm .up-legend { margin-left: auto; color: var(--muted); font-weight: 800; font-size: .8rem; }
+#pm .up-legend i { display: inline-block; width: .8em; height: .8em; border-radius: 3px; margin: 0 .3em 0 .6em; vertical-align: -.05em; background: var(--c); }
+#pm .up-board { --c: var(--accent-4); } #pm .up-section { --c: var(--accent-3); } #pm .up-q { --c: #5b8def; }
+#pm .up-manual { --c: var(--accent-1); --tc: var(--accent-1); } #pm .up-auto { --c: var(--accent-2); --tc: var(--accent-2); }
+#pm .pm-q { flex: 1 0 auto; min-height: 7rem; display: flex; flex-direction: column; justify-content: center; gap: 1rem; text-align: center; }
 #pm .pm-qtext { white-space: pre-line; }
-#pm .pm-qtext { font: 700 clamp(1.8rem, 4.5vw, 3.6rem)/1.15 var(--display); }
-#pm .pm-timer { font: 700 clamp(5rem, 16vw, 11rem)/1 var(--display); text-align: center; font-variant-numeric: tabular-nums; color: var(--muted); }
+#pm .pm-qtext { font: 700 clamp(1.5rem, 3.4vw, 2.8rem)/1.15 var(--display); }
+#pm .pm-timer { font: 700 clamp(3rem, 8vw, 5.5rem)/1 var(--display); text-align: center; font-variant-numeric: tabular-nums; color: var(--muted); }
 #pm .pm-timer.run { color: var(--accent-3); }
 #pm .pm-timer.warn { color: var(--accent-1); }
 #pm .pm-timer.urgent, #pm .pm-timer.done { color: var(--accent-2); }
 #pm .pm-btns { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 1rem; }
 #pm .pm-btns2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-#pm .btn.big { font-size: clamp(1.4rem, 3vw, 2.4rem); padding: .7em 0.5em; }
+#pm .btn.big { font-size: clamp(1.2rem, 2.4vw, 2rem); padding: .45em .5em; }
 #pm .pm-keys { border: 2px solid var(--line); border-radius: 16px; padding: .6rem 1rem; background: rgba(255,255,255,.04); }
 #pm .pm-keys-head { font: 600 1rem var(--display); color: var(--accent-1); margin-bottom: .4rem; }
 #pm .pm-keys.collapsed .pm-keys-grid { display: none; }

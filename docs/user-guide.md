@@ -96,6 +96,8 @@ For the part of the night where you only step through questions and answers, pre
 | `?` | Show / hide the on-screen shortcut list |
 | `Esc` or `P` | Leave present mode |
 
+**Coming up.** A strip under the title lists the next steps by round and question number only (e.g. *R2 · Q3 question*), or *Section · R2* and *Leaderboard*, never the question or answer text, so you can see what is ahead and navigate; click a chip to jump there. Colours: purple = leaderboard, teal = section page, blue = question, gold = the answer appears when you press Reveal, coral = the answer shows by itself (Answer reveal mode). Two pills count the steps until the next leaderboard and the next answer, and say whether that answer shows by itself or needs Reveal.
+
 The same list is always shown at the bottom of present mode (press `?` to collapse it). `H` also works in normal Admin.
 
 The timer counts down on the Leaderboard (big, bottom-right, amber in the last 10 seconds, red in the last 5, "Time!" at zero). Its length (default 45 s, 5–600) is set in the field at the top of present mode and is saved with the quiz. Moving to another step stops the timer. Outside present mode Space still means *Next*.
