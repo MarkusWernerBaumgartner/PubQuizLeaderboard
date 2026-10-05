@@ -203,7 +203,7 @@
     const panel = el('div', { class: 'panel' },
       el('div', { class: 'card' }, editSwitch),
       el('div', { class: 'card' }, el('h2', { text: 'Presentation options' }),
-        flowRow('sectionPages', 'Section page before each round', 'A full-screen page with the round name before its first question, in normal and Answer reveal mode. A safe stop when flicking through answers: nothing is revealed on it, so you cannot run into the next round by accident'),
+        flowRow('sectionPages', 'Section page before each round', 'A full-screen page with the round name before its first question, in normal and Answer reveal mode (followed by the leaderboard when it returns between questions, so you can read the questions out yourself). A safe stop when flicking through answers: nothing is revealed on it, so you cannot run into the next round by accident'),
         flowRow('revealNoBoard', 'Answer reveal mode: don\'t return to the leaderboard', 'Only while Answer reveal mode is on: go straight from one question\'s answer to the next question instead of via the leaderboard (other modes are unaffected)')),
       el('div', { class: 'card' }, el('h2', { text: 'Questions by round' }),
         roundPills(qRound, (id) => { qRound = id; render(true); }, (r) => r.questions.length > 0),

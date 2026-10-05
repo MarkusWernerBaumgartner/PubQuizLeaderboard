@@ -32,7 +32,7 @@ Questions are shown on the big screen as a slideshow (see below). To skip straig
 
 **Presentation options** (top of the Questions tab):
 
-- **Section page before each round** adds a full-screen page with the round's name (and its question count) before the round's first question, in normal and Answer reveal mode. It is a deliberate stop: nothing is ever revealed on it, so when you flick through answers in Answer reveal mode you pause at each round boundary instead of running straight into the next round's answers. Press Next to start the round.
+- **Section page before each round** adds a full-screen page with the round's name (and its question count) before the round's first question, in normal and Answer reveal mode. It is a deliberate stop: nothing is ever revealed on it, so when you flick through answers in Answer reveal mode you pause at each round boundary instead of running straight into the next round's answers. With *Return to the leaderboard between questions* on, the leaderboard follows the section page, so you can read the round's questions out yourself before using any reveal; with it off (or in Answer reveal mode with the option below) the first question follows directly. Press Next to start the round.
 - **Answer reveal mode: don't return to the leaderboard** drops the leaderboard steps between questions, but only while Answer reveal mode is on. Normal presenting keeps its usual flow (and the Effects tab's *Return to the leaderboard between questions* switch still applies there).
 
 Switching either option keeps you on the same question.

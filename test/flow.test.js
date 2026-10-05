@@ -80,7 +80,8 @@ test('section pages: a stop at the start of every round that has questions, neve
   assert.deepEqual(L.presentationSteps(base).map((x) => x.type).includes('section'), false, 'off by default');
   let s = flow(base, { sectionPages: true });
   assert.deepEqual(L.presentationSteps(s).map((x) => x.type),
-    ['board', 'section', 'question', 'options', 'board', 'question', 'board', 'section', 'question', 'options', 'board']);
+    ['board', 'section', 'board', 'question', 'options', 'board', 'question', 'board', 'section', 'board', 'question', 'options', 'board'],
+    'with return-to-leaderboard on, the board follows the section page so questions can be read out aloud');
   const sec = L.presentationSteps(s).filter((x) => x.type === 'section');
   assert.deepEqual(sec.map((x) => x.roundId), [s.rounds[0].id, s.rounds[1].id]);
   // rounds without questions get no section page
@@ -94,9 +95,24 @@ test('section pages: a stop at the start of every round that has questions, neve
   assert.equal(s.presentation.revealAnswer, false);
   assert.equal(L.reduce(s, { type: 'presentReveal' }), s, 'reveal rejected on a section page');
   s = L.reduce(s, { type: 'presentNext' });
+  assert.equal(L.currentStep(s).type, 'board', 'leaderboard after the section page');
+  s = L.reduce(s, { type: 'presentNext' });
   assert.equal(s.presentation.revealAnswer, false, 'the question step has nothing to reveal yet');
   s = L.reduce(s, { type: 'presentNext' });
   assert.equal(s.presentation.revealAnswer, true, 'options step reveals on arrival');
+});
+
+test('section pages: no board after the section page when return-to-leaderboard is off', () => {
+  const s = flow(flow(quiz(), { sectionPages: true }), { returnToBoard: false });
+  assert.deepEqual(L.presentationSteps(s).map((x) => x.type), ['board', 'section', 'question', 'options', 'question', 'section', 'question', 'options', 'board']);
+});
+
+test('section pages: toggling other switches on the board after a section page keeps that board', () => {
+  let s = flow(quiz(), { sectionPages: true });
+  s = L.reduce(s, { type: 'presentGoto', step: 9 }); // the board after round 2's section page
+  assert.deepEqual([L.currentStep(s).type, L.presentationSteps(s)[8].type], ['board', 'section']);
+  const t = flow(s, { splitOptions: false });
+  assert.deepEqual([L.currentStep(t).type, L.presentationSteps(t)[t.presentation.step - 1].type], ['board', 'section'], 'still the board right after the section page');
 });
 
 test('section pages: switching keeps your place', () => {
@@ -104,7 +120,7 @@ test('section pages: switching keeps your place', () => {
   assert.equal(L.currentQuestion(s).question.text, 'C');
   s = flow(s, { sectionPages: true });
   assert.equal(L.currentQuestion(s).question.text, 'C');
-  s = L.reduce(s, { type: 'presentGoto', step: 7 }); // the round 2 section page
+  s = L.reduce(s, { type: 'presentGoto', step: 8 }); // the round 2 section page
   assert.equal(L.currentStep(s).type, 'section');
   s = flow(s, { sectionPages: false }); // page disappears: land on that round's first question
   assert.equal(L.currentQuestion(s).question.text, 'C');
@@ -143,4 +159,15 @@ test('new flow options survive normalize, reset and ignore junk', () => {
   assert.deepEqual(L.normalizeState(JSON.parse(JSON.stringify(s))).flow, { returnToBoard: true, splitOptions: true, revealNoBoard: true, sectionPages: true });
   assert.equal(flow(s, { sectionPages: true }), s, 'no-op when unchanged');
   assert.equal(flow(quiz(), { sectionPages: 'yes' }).flow.sectionPages, false, 'only literal true turns it on');
+});
+
+test('toggling a flow option while on a leaderboard step keeps that same leaderboard (not the first one)', () => {
+  let s = L.reduce(quiz(), { type: 'presentGoto', step: 5 }); // the board right after question B
+  const after = (t) => { const st = L.presentationSteps(t); const i = t.presentation.step; return [st[i].type, st[i - 1].type, st[i - 1].qIndex]; };
+  assert.deepEqual(after(s), ['board', 'question', 1]);
+  assert.deepEqual(after(flow(s, { sectionPages: true })), ['board', 'question', 1], 'adding section pages');
+  assert.deepEqual(after(flow(s, { splitOptions: false })), ['board', 'question', 1], 'merging options');
+  const reveal = L.reduce(flow(s, { revealNoBoard: false }), { type: 'setAutoReveal', on: true });
+  assert.equal(L.currentStep(reveal).type, 'board', 'reveal mode without the option keeps the boards');
+  assert.ok(reveal.presentation.step > 0, 'did not jump back to the start');
 });

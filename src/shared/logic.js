@@ -154,13 +154,16 @@
   // ---- presentation -------------------------------------------------------
   // Multiple choice: [question] → [question + options] (or one combined step when splitOptions is off).
   // Written: just [question]. Between questions: a leaderboard step, unless returnToBoard is off (one is always kept at the end).
-  // sectionPages adds a { type: 'section', roundId } page before each round that has questions.
+  // sectionPages adds a { type: 'section', roundId } page before each round that has questions (then a board, if returnToBoard).
   function presentationSteps(state) {
     const flow = cleanFlow(state.flow);
     if (flow.revealNoBoard && state.presentation && state.presentation.autoReveal) flow.returnToBoard = false;
     const steps = [{ type: 'board' }];
     for (const round of state.rounds) {
-      if (flow.sectionPages && (round.questions || []).length) steps.push({ type: 'section', roundId: round.id });
+      if (flow.sectionPages && (round.questions || []).length) {
+        steps.push({ type: 'section', roundId: round.id });
+        if (flow.returnToBoard) steps.push({ type: 'board' });   // read the questions out yourself from the leaderboard
+      }
       (round.questions || []).forEach((q, qIndex) => {
         const at = { roundId: round.id, qIndex };
         if (isText(q)) steps.push({ type: 'question', ...at });
@@ -191,9 +194,14 @@
     const old = oldSteps[oldIndex];
     if (!old) return oldIndex;
     const same = (a, b) => a.type === b.type && a.roundId === b.roundId && a.qIndex === b.qIndex;
-    let i = newSteps.findIndex((x) => same(x, old));
+    let i = old.type === 'board' ? -1 : newSteps.findIndex((x) => same(x, old));   // all boards look alike: handled below
     if (i >= 0) return i;
     if (old.type === 'board') {
+      const before = oldSteps[oldIndex - 1];
+      if (before && before.type === 'section') {   // the board right after a section page stays right after it
+        const at = newSteps.findIndex((x) => x.type === 'section' && x.roundId === before.roundId);
+        if (at >= 0) return newSteps[at + 1] && newSteps[at + 1].type === 'board' ? at + 1 : at;
+      }
       let j = oldIndex - 1;
       while (j >= 0 && (oldSteps[j].type === 'board' || oldSteps[j].type === 'section')) j--;
       if (j < 0) return 0;

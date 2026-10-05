@@ -5,6 +5,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- A section page is now followed by the leaderboard when "Return to the leaderboard between questions" is on, so you can read a round's questions out yourself while showing the section header, without using Answer reveal. (With that setting off, or in Answer reveal mode with *don't return to the leaderboard*, the first question follows directly.)
+
+### Fixed
+- Pressing `R` (Answer reveal mode) or changing a presentation-flow switch while on a leaderboard step jumped back to the very first step instead of keeping your place (introduced in 1.3.0).
+
 ## [1.3.1] - 2026-10-05
 
 ### Added
