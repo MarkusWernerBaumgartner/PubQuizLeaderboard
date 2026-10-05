@@ -91,13 +91,16 @@ iframe.media-item { width: 100%; aspect-ratio: 16 / 9; height: auto; }
 /* Rules overlay */
 .rules { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: radial-gradient(circle at 50% 30%, var(--bg-mid), var(--bg) 60%, var(--bg-deep)); opacity: 0; visibility: hidden; transform: scale(1.06); transition: opacity .7s, transform .7s, visibility 0s .7s; }
 .rules.on { opacity: 1; visibility: visible; transform: none; transition: opacity .7s, transform .7s, visibility 0s; }
-.rules-inner { width: min(78vw, 120rem); display: flex; flex-direction: column; align-items: center; gap: 1.2rem; }
-.rules-brand { display: flex; align-items: center; gap: 1.4rem; } .rules-brand img { height: 6rem; } .rules-brand .wordmark-text { font: 700 3rem var(--display); color: var(--text); }
-#rules-title { font-size: 3.4rem; color: var(--accent-1); text-align: center; text-shadow: 0 .2rem 0 rgba(0,0,0,.35); }
-.rules h3 { font-size: 2.2rem; color: var(--accent-3); letter-spacing: .08em; text-transform: uppercase; }
-#rules-list { list-style: none; counter-reset: r; padding: 0; margin: .4rem 0 0; display: flex; flex-direction: column; gap: .9rem; width: 100%; }
-#rules-list li { counter-increment: r; display: flex; align-items: center; gap: 1.2rem; font: 600 1.9rem var(--display); background: rgba(255,255,255,.07); border-radius: 1.4rem; padding: .7rem 1.4rem; opacity: 0; transform: translateX(-4rem) rotate(-1deg); }
-#rules-list li::before { content: counter(r); flex: none; width: 2.8rem; height: 2.8rem; border-radius: 50%; display: grid; place-items: center; background: var(--accent-1); color: var(--bg); font: 700 1.6rem var(--display); }
+/* --rs (0.3–1) is set by leaderboard.js so any number of rules fits the screen. */
+.rules-inner { --rs: 1.3; width: min(84vw, 120rem); display: flex; flex-direction: column; align-items: center; gap: calc(1.2rem * var(--rs)); }
+.rules-brand { display: flex; align-items: center; gap: 1.4rem; } .rules-brand img { height: calc(6rem * var(--rs)); } .rules-brand .wordmark-text { font: 700 calc(3rem * var(--rs)) var(--display); color: var(--text); }
+#rules-title { font-size: calc(3.4rem * var(--rs)); color: var(--accent-1); text-align: center; text-shadow: 0 .2rem 0 rgba(0,0,0,.35); }
+.rules-page { font: 600 calc(1.5rem * var(--rs)) var(--display); color: var(--muted); letter-spacing: .06em; margin-top: calc(-.6rem * var(--rs)); }
+.rules-page[hidden] { display: none; }
+.rules h3 { font-size: calc(2.2rem * var(--rs)); color: var(--accent-3); letter-spacing: .08em; text-transform: uppercase; }
+#rules-list { list-style: none; counter-reset: r var(--start, 0); padding: 0; margin: .4rem 0 0; display: flex; flex-direction: column; gap: calc(.9rem * var(--rs)); width: 100%; }
+#rules-list li { counter-increment: r; display: flex; align-items: center; gap: calc(1.2rem * var(--rs)); font: 600 calc(1.9rem * var(--rs)) var(--display); background: rgba(255,255,255,.07); border-radius: 1.4rem; padding: calc(.7rem * var(--rs)) calc(1.4rem * var(--rs)); opacity: 0; transform: translateX(-4rem) rotate(-1deg); }
+#rules-list li::before { content: counter(r); flex: none; width: calc(2.8rem * var(--rs)); height: calc(2.8rem * var(--rs)); border-radius: 50%; display: grid; place-items: center; background: var(--accent-1); color: var(--bg); font: 700 calc(1.6rem * var(--rs)) var(--display); }
 .rules.on #rules-list li { animation: rule-in .7s cubic-bezier(.2,1.4,.4,1) forwards; animation-delay: calc(.5s + var(--i) * .45s); }
 @keyframes rule-in { to { opacity: 1; transform: none; } }
 

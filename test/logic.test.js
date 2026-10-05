@@ -97,6 +97,32 @@ test('rules', () => {
   assert.equal(s.rules.visible, false);
 });
 
+test('rules are paged (5 per page); the page is clamped, saved and reset when shown', () => {
+  const nine = Array.from({ length: 9 }, (_, i) => `rule ${i + 1}`);
+  let s = L.reduce(L.defaultState(), { type: 'setRules', items: nine });
+  assert.equal(L.RULES_PER_PAGE, 5);
+  assert.equal(L.rulesPageCount(s), 2);
+  assert.equal(s.rules.page, 0, 'starts on page 1');
+  s = L.reduce(s, { type: 'setRulesPage', page: 1 });
+  assert.equal(s.rules.page, 1);
+  assert.equal(L.reduce(s, { type: 'setRulesPage', page: 1 }), s, 'no-op when unchanged');
+  assert.equal(L.reduce(s, { type: 'setRulesPage', page: 2 }), s, 'past the last page rejected');
+  assert.equal(L.reduce(s, { type: 'setRulesPage', page: -1 }), s, 'negative rejected');
+  assert.equal(L.reduce(s, { type: 'setRulesPage', page: 'x' }), s, 'non-number rejected');
+  const loaded = L.reduce(L.defaultState(), { type: 'load', state: JSON.parse(JSON.stringify(s)) });
+  assert.equal(loaded.rules.page, 1, 'survives save/load');
+  s = L.reduce(s, { type: 'setRules', items: nine.slice(0, 3) });
+  assert.equal(s.rules.page, 0, 'shrinking the list pulls the page back in range');
+  assert.equal(L.rulesPageCount(s), 1);
+  s = L.reduce(L.reduce(L.reduce(L.defaultState(), { type: 'setRules', items: nine }), { type: 'setRulesPage', page: 1 }), { type: 'setRulesVisible', visible: false });
+  s = L.reduce(s, { type: 'setRulesVisible', visible: true });
+  assert.equal(s.rules.page, 0, 'showing the rules starts at page 1');
+  const old = JSON.parse(JSON.stringify(L.defaultState()));
+  delete old.rules.page;
+  assert.equal(L.reduce(L.defaultState(), { type: 'load', state: old }).rules.page, 0, 'old quizzes load on page 1');
+  assert.equal(L.rulesPageCount({ rules: { items: [] } }), 1, 'an empty list is still one page');
+});
+
 test('setQuestions enforces 4 options', () => {
   let s = quiz();
   const rid = s.rounds[0].id;

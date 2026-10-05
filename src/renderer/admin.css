@@ -79,7 +79,6 @@ footer .dots i.on { background: var(--accent-1); transform: scale(1.5); }
 #pm .pm-sub { color: var(--muted); font-weight: 800; }
 #pm .pm-q { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; justify-content: center; gap: 1rem; text-align: center; }
 #pm .pm-qtext { font: 700 clamp(1.8rem, 4.5vw, 3.6rem)/1.15 var(--display); }
-#pm .pm-ans { font: 700 clamp(1.4rem, 3vw, 2.4rem) var(--display); color: var(--accent-3); }
 #pm .pm-timer { font: 700 clamp(5rem, 16vw, 11rem)/1 var(--display); text-align: center; font-variant-numeric: tabular-nums; color: var(--muted); }
 #pm .pm-timer.run { color: var(--accent-3); }
 #pm .pm-timer.warn { color: var(--accent-1); }

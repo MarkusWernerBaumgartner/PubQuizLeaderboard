@@ -4,7 +4,7 @@
   const $ = (id) => document.getElementById(id);
   const rowEls = new Map(); // teamId -> { el, refs }
   let state = null, prev = null;
-  let statWindow = 0, lastQ = null, lastRulesVisible = null, lastStepKey = null, lastReveal = false;
+  let statWindow = 0, lastQ = null, lastRulesVisible = null, lastRulesKey = null, lastStepKey = null, lastReveal = false;
 
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
   const roundColour = (state, roundId) => ROUND_COLOURS[state.rounds.findIndex((r) => r.id === roundId) % ROUND_COLOURS.length];
@@ -213,12 +213,29 @@
     renderStats(false);
   }
 
+  // Shrink the rules screen (CSS --rs) until the whole list fits, however many or long the rules are.
+  function fitRules() {
+    const inner = document.querySelector('.rules-inner'), box = $('rules');
+    let s = 1.3;   // rules are paged, so start big and only shrink when a page is crowded
+    inner.style.setProperty('--rs', s);
+    while (s > 0.3 && inner.getBoundingClientRect().height > box.clientHeight * 0.94) { s = Math.round((s - 0.04) * 100) / 100; inner.style.setProperty('--rs', s); }
+  }
+  window.addEventListener('resize', () => { if (state) fitRules(); });
+
   function renderRules() {
     const rules = $('rules'), vis = state.rules.visible;
     $('rules-title').textContent = state.title;
-    if (vis && lastRulesVisible !== true) {
+    const pages = L.rulesPageCount(state), page = state.rules.page || 0;
+    const first = page * L.RULES_PER_PAGE, shown = state.rules.items.slice(first, first + L.RULES_PER_PAGE);
+    const key = page + '|' + JSON.stringify(shown);
+    if (vis && (lastRulesVisible !== true || key !== lastRulesKey)) {
+      lastRulesKey = key;
       const ol = $('rules-list'); ol.replaceChildren();
-      state.rules.items.forEach((t, i) => { const li = el('li', null, t); li.style.setProperty('--i', i); ol.append(li); });
+      ol.style.setProperty('--start', first);   // numbering carries on across pages
+      shown.forEach((t, i) => { const li = el('li', null, t); li.style.setProperty('--i', i); ol.append(li); });
+      const chip = $('rules-page'); chip.hidden = pages < 2; chip.textContent = `Page ${page + 1} of ${pages}`;
+      fitRules();
+      setTimeout(fitRules, 400);   // fonts and branding images may settle after the first layout
     }
     rules.classList.toggle('on', vis);
     lastRulesVisible = vis;

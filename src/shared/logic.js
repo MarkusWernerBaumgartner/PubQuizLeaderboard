@@ -14,6 +14,8 @@
     'Be loud, be silly, be kind. Most importantly: have fun!',
   ];
   const HISTORY_CAP = 500;
+  const RULES_PER_PAGE = 5;   // the rules screen shows this many at a time, so they can be big
+  const rulesPageCount = (s) => Math.max(1, Math.ceil(s.rules.items.length / RULES_PER_PAGE));
   const DEFAULT_TIMER = 45;
   const clampTimer = (v) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(600, Math.max(5, Math.round(v))) : DEFAULT_TIMER);
 
@@ -35,7 +37,7 @@
       rounds,
       teams: [],
       adjustments: [],
-      rules: { items: DEFAULT_RULES.slice(), visible: true },
+      rules: { items: DEFAULT_RULES.slice(), visible: true, page: 0 },
       home: { visible: false },   // full-screen logo/title page for the start of the night (sits above the rules)
       presentation: { step: 0, revealAnswer: false, autoReveal: false, timerSeconds: DEFAULT_TIMER },
       flow: defaultFlow(),
@@ -112,7 +114,7 @@
       return { id: t.id, name: t.name, colour: typeof t.colour === 'string' ? t.colour : COLOURS[0], scores };
     });
     const rules = isObj(obj.rules) && Array.isArray(obj.rules.items)
-      ? { items: obj.rules.items.filter((i) => typeof i === 'string'), visible: obj.rules.visible !== false }
+      ? { items: obj.rules.items.filter((i) => typeof i === 'string'), visible: obj.rules.visible !== false, page: Number.isInteger(obj.rules.page) ? obj.rules.page : 0 }
       : d.rules;
     const teamIds = new Set(teams.map((t) => t.id));
     const adjustments = (Array.isArray(obj.adjustments) ? obj.adjustments : []).filter((a) => isObj(a) && typeof a.id === 'string' &&
@@ -134,6 +136,7 @@
       },
       history, nextId: Math.max(maxN + 1, Number.isInteger(obj.nextId) ? obj.nextId : 0),
     };
+    state.rules.page = Math.min(Math.max(0, state.rules.page), rulesPageCount(state) - 1);
     return clampPresentation(state);
   }
 
@@ -299,11 +302,17 @@
       case 'setRules': {
         if (!Array.isArray(action.items)) return state;
         s.rules.items = action.items.map(str).filter(Boolean);
+        s.rules.page = Math.min(s.rules.page, rulesPageCount(s) - 1);
         return s;
       }
       case 'setRulesVisible':
         if (s.rules.visible === !!action.visible) return state;
         s.rules.visible = !!action.visible;
+        if (s.rules.visible) s.rules.page = 0;   // always open on page 1
+        return s;
+      case 'setRulesPage':
+        if (!Number.isInteger(action.page) || action.page < 0 || action.page >= rulesPageCount(s) || action.page === s.rules.page) return state;
+        s.rules.page = action.page;
         return s;
       case 'setHomeVisible':
         if (s.home.visible === !!action.visible) return state;
@@ -417,5 +426,5 @@
     return { roundWinners, biggestClimber, bestWorst, leadChanges, gap, woodenSpoon };
   }
 
-  return { DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, parseMedia, scoredRounds, defaultFlow, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
+  return { RULES_PER_PAGE, rulesPageCount, DEFAULT_TITLE, COLOURS, defaultState, normalizeState, reduce, standings, stats, presentationSteps, currentQuestion, parseMedia, scoredRounds, defaultFlow, isText, hasAnswer, canReveal, adjKind, adjustmentTotal };
 });

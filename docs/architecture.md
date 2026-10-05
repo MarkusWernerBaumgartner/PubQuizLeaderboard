@@ -48,7 +48,7 @@ If the reducer rejects an action (invalid score, duplicate team name, …) it re
             | { type: 'text', text, options: [], correct: null, answer } ] }],   // written answer
   teams:    [{ id, name, colour, scores: { [roundId]: number } }],
   adjustments: [{ id, teamId, points (≠0; <0 penalty, >0 bonus), reason }],   // added to team totals
-  rules:    { items: string[], visible: boolean },
+  rules:    { items: string[], visible: boolean, page: number },   // 5 rules per page (RULES_PER_PAGE)
   home: { visible: boolean },   // full-screen logo/title page, above the rules
   presentation: { step: number, revealAnswer: boolean, autoReveal: boolean, timerSeconds: number },
   flow:     { returnToBoard: boolean, splitOptions: boolean },   // how the slideshow is stepped (both default true)
@@ -56,7 +56,7 @@ If the reducer rejects an action (invalid score, duplicate team name, …) it re
   nextId }
 ```
 
-Actions: `setTitle`, `setRounds`, `addTeam`, `renameTeam`, `removeTeam`, `setScore`, `setFlow`, `addAdjustment`, `removeAdjustment`, `undo`, `clearScores`, `resetAll`, `setRules`, `setRulesVisible`, `setHomeVisible`, `setQuestions`, `presentNext`, `presentPrev`, `presentGoto`, `presentReveal`, `setAutoReveal`, `setTimerSeconds`, `load`.
+Actions: `setTitle`, `setRounds`, `addTeam`, `renameTeam`, `removeTeam`, `setScore`, `setFlow`, `addAdjustment`, `removeAdjustment`, `undo`, `clearScores`, `resetAll`, `setRules`, `setRulesVisible`, `setRulesPage`, `setHomeVisible`, `setQuestions`, `presentNext`, `presentPrev`, `presentGoto`, `presentReveal`, `setAutoReveal`, `setTimerSeconds`, `load`.
 
 `normalizeState` validates anything read from disk or a loaded file and fills in optional fields; bad shapes are rejected without touching the current state.
 

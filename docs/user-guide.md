@@ -18,6 +18,8 @@ Set the quiz **title** (shown on the Leaderboard) and the **rounds**: how many, 
 ### Rules tab
 Edit the list of rules shown on the big screen. Add rules with the input at the bottom, reorder with ▲▼, remove with ✕. The **Show rules** switch (also available as the *Rules* button in the bottom bar) covers the Leaderboard with an animated rules screen; turn it off to reveal the scoreboard. A fresh quiz starts with rules showing.
 
+The rules screen shows **5 rules per page** so they can be large: with 6 or more rules you get *Page 1*, *Page 2*, … (numbering carries on, so page 2 starts at 6). While the rules are showing, **Page 1 / Page 2** buttons appear next to *Rules* in the bottom bar, and `[` / `]` switch pages from the keyboard. Switching the rules on always starts at page 1. If a page is still too crowded (very long rules) the text shrinks to fit.
+
 ### Questions tab (optional)
 The **Edit mode** switch at the top locks all question controls when turned off, so nothing gets changed by accident while you present. It is remembered on this computer and is on by default.
 
@@ -73,7 +75,7 @@ Use **Prev / Next**, the arrow keys, or Space (when no text box is focused). The
 **Answer reveal mode** (the *Answer reveal mode* button in the bottom bar, or press `R` when no text box is focused) makes every answer appear the moment you reach it: the options step of a multiple-choice question, or the question step of a written one. It is meant for grading a round: switch it on and flick through the questions. **Reveal answer** still hides or shows the current answer by hand, and the mode is saved with the quiz.
 
 ### Present mode and the question timer
-For the part of the night where you only step through questions and answers, press **🎬 Present** in the Admin header (or `P`). A full-window layer shows the current step, the question and its answer (for you; the audience only sees it once revealed), and huge buttons: **Prev**, **Start timer**, **Next**, **Reveal answer** and **Answer reveal mode**.
+For the part of the night where you only step through questions and answers, press **🎬 Present** in the Admin header (or `P`). A full-window layer shows the current step and the question (never the answer; that only appears for everyone when you reveal it), and huge buttons: **Prev**, **Start timer**, **Next**, **Reveal answer** and **Answer reveal mode**.
 
 | Key | Action |
 | --- | --- |
@@ -83,6 +85,7 @@ For the part of the night where you only step through questions and answers, pre
 | `A` | Reveal / hide the answer |
 | `R` | Answer reveal mode on / off |
 | `H` | Home page on / off |
+| `[` / `]` | Rules page back / forward |
 | `?` | Show / hide the on-screen shortcut list |
 | `Esc` or `P` | Leave present mode |
 

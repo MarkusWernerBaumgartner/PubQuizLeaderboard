@@ -413,6 +413,15 @@
     const label = `${round.name} · Q${step.qIndex + 1}`;
     return step.type === 'question' ? `${label} – question` : `${label} – question + options`;
   }
+  // While the rules are on the big screen and span several pages: one button per page.
+  function rulesPageButtons() {
+    const n = L.rulesPageCount(state);
+    if (!state.rules.visible || n < 2) return [];
+    return Array.from({ length: n }, (_, p) => el('button', { class: 'btn small ' + (state.rules.page === p ? 'gold' : 'ghost'), text: `Page ${p + 1}`,
+      title: 'Rules page ([ and ] switch pages)', onclick: () => dispatch({ type: 'setRulesPage', page: p }) }));
+  }
+  const rulesPageStep = (d) => { if (state.rules.visible) dispatch({ type: 'setRulesPage', page: state.rules.page + d }); };
+
   function buildPresent() {
     const steps = L.presentationSteps(state);
     const i = state.presentation.step;
@@ -426,6 +435,7 @@
         onclick: () => dispatch({ type: 'setHomeVisible', visible: !state.home.visible }) }),
       el('button', { class: 'btn small ' + (state.rules.visible ? 'gold' : 'ghost'), text: state.rules.visible ? '📜 Rules: ON' : '📜 Rules: off',
         onclick: () => dispatch({ type: 'setRulesVisible', visible: !state.rules.visible }) }),
+      ...rulesPageButtons(),
       el('button', { class: 'btn', text: '◀ Prev', disabled: i === 0, onclick: () => dispatch({ type: 'presentPrev' }) }),
       el('div', { class: 'step-info' }, el('b', { text: describeStep(steps[i]) }),
         el('div', { class: 'muted', text: steps.length > 1 ? `Step ${i + 1} of ${steps.length}` : 'No questions yet – add some in the Questions tab' }), dots),
@@ -486,6 +496,7 @@
     const box = $('notes');
     const show = !!text && notesDismissedStep !== state.presentation.step;
     box.hidden = !show;
+    box.style.bottom = ($('present').offsetHeight + 12) + 'px';   // sit above the bar, however many rows it wraps to
     if (show) box.replaceChildren(el('div', { class: 'notes-head' }, el('b', { text: '🗒 Presenter notes' }),
       el('button', { class: 'icon', text: '✕', title: 'Dismiss', onclick: () => { notesDismissedStep = state.presentation.step; updateNotes(); } })),
       el('div', { class: 'notes-body', text }));
@@ -505,7 +516,7 @@
       onchange: (e) => dispatch({ type: 'setTimerSeconds', seconds: Number(e.target.value) }, e.target, 'Timer must be a number of seconds') });
     pm = {
       step: el('div', { class: 'pm-step' }), sub: el('div', { class: 'pm-sub' }),
-      qtext: el('div', { class: 'pm-qtext' }), ans: el('div', { class: 'pm-ans' }),
+      qtext: el('div', { class: 'pm-qtext' }),
       time: el('div', { class: 'pm-timer' }), dur,
       notes: el('div', { class: 'notes pm-notes', hidden: true }),
       keys: el('div', { class: 'pm-keys' }),
@@ -519,7 +530,7 @@
       el('div', { class: 'pm-top' }, el('div', { class: 'grow' }, pm.step, pm.sub),
         el('label', { class: 'pm-dur' }, 'Timer', dur, 's'),
         el('button', { class: 'btn ghost', text: '✕ Exit', onclick: closePM })),
-      el('div', { class: 'pm-q' }, pm.qtext, pm.ans),
+      el('div', { class: 'pm-q' }, pm.qtext),
       pm.time,
       el('div', { class: 'pm-btns' }, pm.prev, pm.timerBtn, pm.next),
       el('div', { class: 'pm-btns2' }, pm.reveal, pm.auto),
@@ -534,6 +545,7 @@
     { keys: ['A'], does: 'Reveal / hide the answer' },
     { keys: ['R'], does: 'Answer reveal mode on / off' },
     { keys: ['H'], does: 'Home page on / off' },
+    { keys: ['[', ']'], does: 'Rules page back / forward' },
     { keys: ['?'], does: 'Show / hide this list' },
     { keys: ['Esc', 'P'], does: 'Leave present mode' },
   ];
@@ -547,13 +559,6 @@
     pm.step.textContent = describeStep(steps[i]);
     pm.sub.textContent = steps.length > 1 ? `Step ${i + 1} of ${steps.length}` : 'No questions yet – add some in the Questions tab';
     pm.qtext.textContent = cur ? (cur.question.text || '…') : '';
-    let answer = '';
-    if (cur) {
-      if (L.isText(cur.question)) answer = L.hasAnswer(cur.question) ? cur.question.answer : '';
-      else if (cur.question.correct !== null && cur.question.correct !== undefined) answer = `${'ABCD'[cur.question.correct]}: ${cur.question.options[cur.question.correct] || ''}`;
-    }
-    pm.ans.textContent = answer ? `Answer – ${answer}` : '';
-    pm.ans.style.opacity = state.presentation.revealAnswer ? '1' : '.55';
     pm.prev.disabled = i === 0;
     pm.next.disabled = i >= steps.length - 1;
     pm.reveal.disabled = !L.canReveal(cur);
@@ -640,12 +645,15 @@
         : k === 'a' ? () => dispatch({ type: 'presentReveal' })
         : k === 'r' ? () => dispatch({ type: 'setAutoReveal', on: !state.presentation.autoReveal })
         : k === 'h' ? () => dispatch({ type: 'setHomeVisible', visible: !state.home.visible })
+        : k === '[' ? () => rulesPageStep(-1)
+        : k === ']' ? () => rulesPageStep(1)
         : k === '?' ? toggleKeys
         : (k === 'Escape' || k === 'p') ? closePM : null;
       if (act) { e.preventDefault(); if (tag === 'BUTTON') e.target.blur(); if (!e.repeat) act(); }
       return;
     }
     if (k === 'p' && plain) { e.preventDefault(); openPM(); return; }
+    if ((k === '[' || k === ']') && plain) { e.preventDefault(); rulesPageStep(k === ']' ? 1 : -1); return; }
     if (k === 'h' && plain) { e.preventDefault(); dispatch({ type: 'setHomeVisible', visible: !state.home.visible }); return; }
     if (e.key === 'ArrowRight' || (e.key === ' ' && tag !== 'BUTTON')) { e.preventDefault(); dispatch({ type: 'presentNext' }); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); dispatch({ type: 'presentPrev' }); }
